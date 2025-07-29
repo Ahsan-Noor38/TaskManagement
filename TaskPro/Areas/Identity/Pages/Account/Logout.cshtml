@@ -1,0 +1,43 @@
+﻿@page
+@model LogoutModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Log out";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/StyleSheet.css" rel="stylesheet" />
+
+</head>
+<body>
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="card shadow-lg rounded-4 p-4" style="max-width: 500px; width: 100%;">
+            <h2 class="text-center mb-3">@ViewData["Title"]</h2>
+            <div class="text-center">
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <form asp-area="Identity" asp-page="/Account/Logout"
+                          asp-route-returnUrl="@Url.Page("/", new { area = "" })"
+                          method="post">
+                        <button type="submit" class="btn btn-danger">Click here to Log out</button>
+                    </form>
+                }
+                else
+                {
+                    <p class="text-success">You have successfully logged out of the application.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+﻿@page
+@model LoginModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Log in";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/StyleSheet.css" rel="stylesheet" />
+    <link href="~/css/StyleSheet.css" rel="stylesheet" />
+
+
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+
+                <div class="card shadow-lg rounded-4">
+                    <div class="card-header text-center bg-primary text-white rounded-top-4">
+                        <h3 class="my-2">@ViewData["Title"]</h3>
+                    </div>
+                    <div class="card-body px-4 py-4">
+                        <form id="account" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
+                                <label asp-for="Input.Email">Email</label>
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.Password" type="password" class="form-control" autocomplete="current-password" placeholder="Password" />
+                                <label asp-for="Input.Password">Password</label>
+                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" asp-for="Input.RememberMe" />
+                                <label class="form-check-label" asp-for="Input.RememberMe">
+                                    @Html.DisplayNameFor(m => m.Input.RememberMe)
+                                </label>
+                            </div>
+
+                            <button type="submit" class="w-100 btn btn-gradient btn-lg mb-3">Log in</button>
+
+                            <div class="text-center">
+                                <a asp-page="./ForgotPassword" class="d-block mb-2">Forgot your password?</a>
+                                <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="d-block mb-2">Register as a new user</a>
+                                <a asp-page="./ResendEmailConfirmation" class="d-block">Resend email confirmation</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>

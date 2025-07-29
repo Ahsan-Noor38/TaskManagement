@@ -1,0 +1,33 @@
+﻿@page
+@model AccessDeniedModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Access denied";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/StyleSheet.css" rel="stylesheet" />
+
+</head>
+<body>
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="card shadow-lg rounded-4 p-4 text-center" style="max-width: 500px; width: 100%;">
+            <h2 class="text-danger">@ViewData["Title"]</h2>
+            <p class="text-danger">You do not have access to this resource.</p>
+            <a class="btn btn-primary mt-3" href="/">Back to Home</a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+/* Auth Form Styles - reusable for login, register, forgot password, etc. */
+.auth-form-wrapper {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 40px 32px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.auth-form-wrapper h6 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #2d3748;
+    text-align: center;
+}
+
+.input-style-1 {
+    margin-bottom: 20px;
+}
+
+.input-style-1 label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #4a5568;
+}
+
+.input-style-1 input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    background: #f7fafc;
+}
+
+.input-style-1 input:focus {
+    border-color: #3182ce;
+    outline: none;
+    background: #fff;
+}
+
+.form-check.checkbox-style {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.form-check-input {
+    accent-color: #3182ce;
+    margin-right: 8px;
+}
+
+.form-check-label {
+    font-size: 0.95rem;
+    color: #4a5568;
+}
+
+.button-group .main-btn {
+    background: linear-gradient(90deg, #3182ce 0%, #63b3ed 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.button-group .main-btn:hover {
+    background: linear-gradient(90deg, #2563eb 0%, #4299e1 100%);
+}
+
+.singin-option {
+    margin-top: 32px;
+}
+
+.singin-option p {
+    color: #4a5568;
+    font-size: 1rem;
+}
+
+.singin-option a {
+    color: #3182ce;
+    text-decoration: underline;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.singin-option a:hover {
+    color: #2563eb;
+}
+
+@media (max-width: 576px) {
+    .auth-form-wrapper {
+        padding: 24px 8px;
+    }
+}

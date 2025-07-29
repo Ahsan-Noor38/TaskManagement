@@ -1,0 +1,146 @@
+﻿/* ==== Base Body Styling ==== */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(270deg, #2a2a2a, #444444, #666666, #444444, #2a2a2a);
+    background-size: 2000% 2000%;
+    animation: gradientBG 20s ease infinite;
+    color: #ffffff;
+}
+
+/* ==== Gradient Background Animation ==== */
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* ==== Card Styling for Login & Register ==== */
+.card,
+.login-card {
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #ffffff;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    border: none;
+}
+
+/* ==== Card Header ==== */
+.card-header {
+    background-color: #111 !important;
+    border-bottom: 1px solid #333;
+}
+
+/* ==== Form Control Styling ==== */
+
+.form-control {
+    background-color: #2e2e2e; /* consistent dark gray */
+    color: #ffffff;
+    border: 1px solid #555;
+}
+
+    .form-control:focus {
+        background-color: #2e2e2e; /* prevent white on focus */
+        color: #ffffff;
+        border-color: #888; /* optional: subtle highlight */
+        box-shadow: none;
+    }
+
+
+/* ==== Floating Labels (Scoped) ==== */
+.form-floating label {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+    color: #aaa;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.form-control:focus ~ label {
+    color: #fff;
+}
+
+.form-floating input:focus ~ label,
+.form-floating input:not(:placeholder-shown) ~ label {
+    top: 0.4rem;
+    font-size: 0.85em;
+    color: #fff;
+}
+
+/* ==== Button Styling ==== */
+.btn-primary, .btn-gradient {
+    background: linear-gradient(to right, #333, #111);
+    border: none;
+    color: #fff;
+    transition: all 0.3s ease-in-out;
+}
+
+    .btn-primary:hover, .btn-gradient:hover {
+        background: linear-gradient(to right, #555, #222);
+        color: #fff;
+    }
+
+/* ==== Checkbox Fix (Remember Me) ==== */
+.form-check-label {
+    position: static !important;
+    transform: none !important;
+    color: #ddd;
+    margin-left: 0.5rem;
+}
+
+.form-check-input {
+    background-color: #111;
+    border: 1px solid #555;
+}
+
+    .form-check-input:checked {
+        background-color: #555;
+        border-color: #888;
+    }
+
+/* ==== Link Styling ==== */
+a{
+    color: #ccc;
+    text-decoration: none;
+}
+
+    a:hover {
+        color: #fff;
+        text-decoration: underline;
+    }
+
+/* ==== Validation Styling ==== */
+.text-danger {
+    color: #ff6b6b !important;
+}
+
+
+/* ==== Input Validation Borders ==== */
+input.input-validation-error,
+select.input-validation-error,
+textarea.input-validation-error {
+    border-color: #ff6b6b;
+    background-color: #2a0000;
+    color: #fff;
+}
+
+/* ==== Responsive Adjustments ==== */
+@media (max-width: 768px) {
+    .card {
+        border-radius: 1rem;
+    }
+
+    .form-floating label {
+        left: 0.75rem;
+    }
+}

@@ -85,7 +85,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
             public bool RememberMe { get; set; }
         }
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public async System.Threading.Tasks.Task OnGetAsync(string returnUrl = null)
         {
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
@@ -116,7 +116,17 @@ namespace TaskPro.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
+                    var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+
+                    // Get user's role
+                    var roles = await _signInManager.UserManager.GetRolesAsync(user);
+                    var userRole = roles.FirstOrDefault(); // Default to "User" if no role found
+
+                    // Store in session
+                    HttpContext.Session.SetString("UserId", user.Id);
+                    HttpContext.Session.SetString("UserFullName", user.FullName);
+                    HttpContext.Session.SetString("UserRole", userRole);
+                    return Redirect("/Home/Index");
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -135,7 +145,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
             }
 
             // If we got this far, something failed, redisplay form
-            return LocalRedirect("~/Home/Index"); ;
+            return Redirect("/Home/InternalServerError");
         }
     }
 }

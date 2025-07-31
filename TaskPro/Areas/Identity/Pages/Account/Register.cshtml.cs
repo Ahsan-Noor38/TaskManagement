@@ -111,12 +111,11 @@ namespace TaskPro.Areas.Identity.Pages.Account
         }
 
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public async System.Threading.Tasks.Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
-
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -159,12 +158,14 @@ namespace TaskPro.Areas.Identity.Pages.Account
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
+                        TempData["SuccessMessage"] = "Registration successful! Please check your email to confirm your account.";
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
+                        TempData["SuccessMessage"] = "Registration successful! Please check your email to confirm your account.";
+                        return RedirectToPage("./Login");
                     }
                 }
                 foreach (var error in result.Errors)

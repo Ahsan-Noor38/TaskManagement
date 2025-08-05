@@ -1,0 +1,199 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Encodings.Web;
+using TaskPro.Helper;
+using TaskPro.Models;
+
+namespace TaskPro.Controllers
+{
+    [Authorize(Roles = "Admin")]
+    public class UsersController : Controller
+    {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly MailProvider _emailSender;
+
+        public UsersController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        {
+            _userManager = userManager;
+            _roleManager = roleManager;
+            _emailSender = new MailProvider(configuration);
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                var users = await _userManager.Users.Where(u => u.CreatedBy == userId).ToListAsync();
+                var userViewModels = new List<UserViewModel>();
+
+                foreach (var user in users)
+                {
+                    var roles = await _userManager.GetRolesAsync(user);
+                    if (!roles.Contains("Admin"))
+                    {
+                        userViewModels.Add(new UserViewModel
+                        {
+                            Id = user.Id,
+                            Email = user.Email,
+                            FullName = user.FullName,
+                            Role = roles.FirstOrDefault()
+                        });
+                    }
+                }
+                return View(userViewModels);
+            }
+
+            return RedirectToPage("/Account/Login", new { returnUrl = Url.Action("Index", "Home") });
+        }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateUserViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (User.Identity.IsAuthenticated)
+                {
+                    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                    var user = new ApplicationUser
+                    {
+                        FullName = model.FullName,
+                        UserName = model.Email,
+                        Email = model.Email,
+                        CreatedBy = userId,
+                    };
+
+                    var result = await _userManager.CreateAsync(user, "DefaultPass@123");
+                    if (result.Succeeded)
+                    {
+                        if (!await _roleManager.RoleExistsAsync(model.Role))
+                        {
+                            await _roleManager.CreateAsync(new IdentityRole(model.Role));
+                        }
+                        await _userManager.AddToRoleAsync(user, model.Role);
+                        await SendSetPasswordEmail(user);
+
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                }
+            }
+            return View(model);
+        }
+
+        private async System.Threading.Tasks.Task SendSetPasswordEmail(ApplicationUser user)
+        {
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            var callbackUrl = Url.Page(
+                "/Account/ResetPassword",
+                pageHandler: null,
+                values: new { area = "Identity", code },
+                protocol: Request.Scheme);
+
+            var emailResult = _emailSender.SendEmail(
+                                        user.Email,
+                                        "Set New Password",
+                                        $"Please set your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+        }
+
+        public async Task<IActionResult> Edit(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var model = new EditUserViewModel
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Role = roles.FirstOrDefault(),
+                FullName = user.FullName
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(EditUserViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByIdAsync(model.Id);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+                if (!await _roleManager.RoleExistsAsync(model.Role))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(model.Role));
+                }
+                await _userManager.AddToRoleAsync(user, model.Role);
+                user.Email = model.Email;
+                user.UserName = model.Email;
+                user.FullName = model.FullName;
+
+                var result = await _userManager.UpdateAsync(user);
+                if (result.Succeeded)
+                {
+                    if (user.Email != model.Email)
+                        await SendSetPasswordEmail(user);
+
+                    return RedirectToAction(nameof(Index));
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+            }
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}

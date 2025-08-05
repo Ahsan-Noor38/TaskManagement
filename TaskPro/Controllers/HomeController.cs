@@ -1,6 +1,7 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using System.Security.Claims;
 using TaskPro.Models;
 
 namespace TaskPro.Controllers;
@@ -16,7 +17,12 @@ public class HomeController : Controller
     }
 
     public IActionResult Index()
-    {
+    {  
+        if (!User.Identity.IsAuthenticated)
+        {
+            return RedirectToPage("/Account/Login", new { returnUrl = Url.Action("Index", "Home") });
+        }
+
         return View();
     }
 

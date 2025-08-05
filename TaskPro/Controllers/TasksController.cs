@@ -7,7 +7,7 @@ using Task = TaskPro.Models.Task;
 
 namespace TaskPro.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class TasksController : Controller
     {
         private readonly TaskProDbContext _context;

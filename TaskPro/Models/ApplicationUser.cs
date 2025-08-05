@@ -7,5 +7,7 @@ namespace TaskPro.Models
     {
         [MaxLength(100)]
         public string FullName { get; set; }
+
+        public string? CreatedBy { get; set; }
     }
 }

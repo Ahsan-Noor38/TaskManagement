@@ -2,18 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using TaskPro.Models;
 
 namespace TaskPro.Areas.Identity.Pages.Account
@@ -117,15 +112,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User logged in.");
                     var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
-
-                    // Get user's role
-                    var roles = await _signInManager.UserManager.GetRolesAsync(user);
-                    var userRole = roles.FirstOrDefault(); // Default to "User" if no role found
-
-                    // Store in session
-                    HttpContext.Session.SetString("UserId", user.Id);
-                    HttpContext.Session.SetString("UserFullName", user.FullName);
-                    HttpContext.Session.SetString("UserRole", userRole);
+                    await AddNameInClaims(user);
                     return Redirect("/Home/Index");
                 }
                 if (result.RequiresTwoFactor)
@@ -146,6 +133,27 @@ namespace TaskPro.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Redirect("/Home/InternalServerError");
+        }
+
+        private async System.Threading.Tasks.Task AddNameInClaims(ApplicationUser user)
+        {
+            // Get existing claims
+            var existingClaims = await _signInManager.UserManager.GetClaimsAsync(user);
+
+            // Check if the "name" claim already exists
+            var existingNameClaim = existingClaims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName);
+            if (existingNameClaim != null)
+            {
+                await _signInManager.UserManager.RemoveClaimAsync(user, existingNameClaim);
+            }
+
+            // Add fresh "name" claim with full name
+            var claims = new List<Claim>
+                        {
+                            new(ClaimTypes.GivenName, user.FullName ?? "")
+                        };
+
+            await _signInManager.UserManager.AddClaimsAsync(user, claims);
         }
     }
 }

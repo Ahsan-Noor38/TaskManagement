@@ -18,7 +18,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 })
-    .AddRoles<IdentityRole>()
+.AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -27,19 +27,12 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
 });
 
-// Add session services
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
-app.UseSession();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {

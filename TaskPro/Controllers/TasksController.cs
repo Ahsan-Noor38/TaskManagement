@@ -1,13 +1,14 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TaskPro.Models;
 using Task = TaskPro.Models.Task;
 
 namespace TaskPro.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class TasksController : Controller
     {
         private readonly TaskProDbContext _context;
@@ -18,9 +19,21 @@ namespace TaskPro.Controllers
         }
 
         // GET: Tasks
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? statusFilter)
         {
             var taskProDbContext = _context.Tasks.Include(t => t.CreatedByNavigation);
+            await taskProDbContext.ForEachAsync(r => r.Description = r.Description.Length > 15 ? r.Description.Substring(0, 15) + "..." : r.Description);
+
+            // Create dictionary of { taskId → isAssigned }
+            var taskUsage = await _context.Tasks
+                                            .Select(t => new
+                                            {
+                                                t.Id,
+                                                IsAssigned = _context.TaskAssignments.Any(a => a.TaskId == t.Id)
+                                            })
+                                            .ToDictionaryAsync(t => t.Id, t => t.IsAssigned);
+
+            ViewBag.TaskUsage = taskUsage;
             return View(await taskProDbContext.ToListAsync());
         }
 
@@ -56,7 +69,7 @@ namespace TaskPro.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Task task)
         {
-            var userId = HttpContext.Session.GetString("UserId");
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             task.CreatedAt = DateTime.Now;
             task.CreatedBy = userId;
@@ -97,7 +110,7 @@ namespace TaskPro.Controllers
             {
                 var userId = HttpContext.Session.GetString("UserId");
                 var taskEntity = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id);
-               
+
                 if (taskEntity is null)
                     return NotFound();
 

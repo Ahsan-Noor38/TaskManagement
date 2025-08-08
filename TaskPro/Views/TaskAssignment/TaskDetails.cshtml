@@ -1,0 +1,324 @@
+﻿@model TaskDetailViewModel
+<style>
+    .task-detail .task-dates li {
+        width: 50%;
+        float: left
+    }
+
+    .task-detail .task-tags .bootstrap-tagsinput {
+        padding: 0;
+        border: none
+    }
+
+    .task-detail .assign-team a {
+        display: inline-block;
+        margin: 5px 5px 5px 0
+    }
+
+    .task-detail .files-list .file-box {
+        display: inline-block;
+        vertical-align: middle;
+        width: 80px;
+        padding: 2px;
+        border-radius: 3px;
+        -moz-border-radius: 3px;
+        background-clip: padding-box
+    }
+
+        .task-detail .files-list .file-box img {
+            line-height: 70px
+        }
+
+        .task-detail .files-list .file-box p {
+            width: 100%;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+    .add-new-plus {
+        height: 32px;
+        text-align: center;
+        width: 32px;
+        display: block;
+        line-height: 32px;
+        color: #98a6ad;
+        font-weight: 700;
+        background-color: #e3eaef;
+        border-radius: 50%
+    }
+
+    .project-sort-item .form-group {
+        margin-right: 30px
+    }
+
+        .project-sort-item .form-group:last-of-type {
+            margin-right: 0
+        }
+
+    .project-box {
+        position: relative
+    }
+
+        .project-box .badge {
+            position: absolute;
+            right: 20px;
+            color: black
+        }
+
+        .project-box h4 {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+            width: 100%;
+            overflow: hidden
+        }
+
+        .project-box ul li {
+            padding-right: 30px
+        }
+
+        .project-box .project-members a {
+            margin: 0 0 10px -12px;
+            display: inline-block;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            -webkit-box-shadow: 0 0 24px 0 rgba(0, 0, 0, .06), 0 1px 0 0 rgba(0, 0, 0, .02);
+            box-shadow: 0 0 24px 0 rgba(0, 0, 0, .06), 0 1px 0 0 rgba(0, 0, 0, .02)
+        }
+
+            .project-box .project-members a:first-of-type {
+                margin-left: 0
+            }
+
+    .company-card .company-logo {
+        float: left;
+        height: 60px;
+        width: 60px;
+        border-radius: 3px
+    }
+
+    .company-card .company-detail {
+        margin: 0 0 50px 75px
+    }
+
+    .text-muted {
+        color: #98a6ad !important;
+    }
+
+    p {
+        line-height: 1.6;
+        font-size: 14px;
+    }
+
+    .bootstrap-tagsinput .label-info {
+        background-color: #02c0ce;
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 13px;
+        margin: 3px 1px;
+        border-radius: 3px;
+    }
+
+    .card-box {
+        padding: 20px;
+        border-radius: 3px;
+        margin-bottom: 30px;
+        background-color: #fff;
+    }
+
+    .thumb-sm {
+        height: 36px;
+        width: 36px;
+    }
+
+    .task-detail .badge-secondary {
+        background-color: #dc3545;
+    }
+    /* urgent */
+    .task-detail .badge-High {
+        background-color: #dc3545;
+    }
+    /* medium */
+    .task-detail .badge-Medium {
+        background-color: #28a745;
+    }
+    /* urgent */
+    .task-detail .badge-Low {
+        background-color: #ffc107;
+    }
+    /* normal */
+    .initial-circle {
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
+        border-radius: 0%;
+        color: white;
+        font-weight: bold;
+        font-size: 24px;
+        display: inline-block;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+</style>
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" />
+<div class="content">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-10">
+                <div class="card-box task-detail">
+                    <div class="media mt-0 mb-3">
+                        <div class="d-flex mr-3 rounded-circle bg-info text-white text-center align-items-center justify-content-center"
+                             style="width:48px;height:48px;font-size:24px;">
+                            📝
+                        </div>
+                        <div class="media-body">
+                            <h5 class="mt-0 mb-1">@Model.Task.Title</h5>
+                            <span class="badge badge-@(Model.Priority)">@(Model.Priority)</span>
+                        </div>
+                    </div>
+
+                    <p class="text-muted">@Model.Task.Description</p>
+
+                    <hr />
+                    <ul class="list-inline task-dates m-b-0 mt-5">
+                        <li>
+                            <h5 class="m-b-5">Start Date</h5>
+                            <p>@Model.Task.CreatedAt.ToString("D") <small class="text-muted">@Model.Task.CreatedAt.ToString("t")</small></p>
+                        </li>
+                        <li>
+                            <h5 class="m-b-5">Due Date</h5>
+                            <p>@Model.Task.Deadline.ToString("D") <small class="text-muted">@Model.Task.Deadline.ToString("t")</small></p>
+                        </li>
+                    </ul>
+
+
+                    <div class="attached-files mt-4">
+                        <div class="files-list">
+                            <br /><br /><br /> <h5 class="">Assigned To</h5>
+                            @if (Model.AssignedUsers.Any())
+                            {
+                                foreach (var a in Model.AssignedUsers)
+                                {
+                                    <div class="file-box text-center">
+                                        <form asp-action="UnassignTask"
+                                              asp-controller="TaskAssignment"
+                                              asp-route-taskId="@Model.Task.Id"
+                                              asp-route-userId="@a.AssignedToNavigation.Id"
+                                              method="post"
+                                              onsubmit="return confirm('Are you sure you want to unassign this task?');">
+
+                                            <button type="submit" class="initial-circle border-0"
+                                                    style="background-color:@GetRandomColor(); cursor:pointer;"
+                                                    title="Click to unassign">
+                                                @a.AssignedToNavigation?.FullName?.Substring(0, 1).ToUpper()
+                                            </button>
+                                        </form>
+
+                                        <p class="font-13 mb-1 text-muted">
+                                            <small>@a.AssignedToNavigation?.FullName</small>
+                                        </p>
+                                    </div>
+                                }
+                            }
+                            <div class="file-box ml-3">
+                                <a href="#">
+                                    <span class="add-new-plus" data-bs-toggle="modal" data-bs-target="#assignModal">
+                                        <i class="fa fa-plus"></i>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignModalLabel">Assign This Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="AssignUser" method="post">
+                    <input type="hidden" name="taskId" value="@Model.Task.Id" />
+
+                    <div class="mb-3">
+                        <label for="selectedUserId" class="form-label">Select User</label>
+                        <select name="selectedUserId" asp-items="Model.AvailableUsers" class="form-control">
+                            <option value="">-- Select User --</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Assign</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@functions {
+    private static readonly string[] Colors = new[]
+    {
+    "#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5",
+    "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50",
+    "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107", "#ff9800",
+    "#ff5722", "#795548", "#607d8b"
+    };
+
+    private string GetRandomColor()
+    {
+        var random = new Random(Guid.NewGuid().GetHashCode()); // ensures better randomness
+        return Colors[random.Next(Colors.Length)];
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@* <h2>Task Details</h2>
+<p><strong>Title:</strong> @Model.Task.Title</p>
+<p><strong>Description:</strong> @Model.Task.Description</p>
+
+<h3>Assign User</h3>
+<form asp-action="AssignUser" method="post">
+    <input type="hidden" name="taskId" value="@Model.Task.Id" />
+
+    <select name="selectedUserId" asp-items="Model.AvailableUsers" class="form-control" required>
+        <option value="">-- Select User --</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary mt-2">Assign</button>
+</form>
+
+@if (Model.AssignedUsers.Any())
+{
+    <h4 class="mt-4">Assigned Users:</h4>
+    <ul>
+        @foreach (var item in Model.AssignedUsers)
+        {
+            <li>@item.AssignedToNavigation.FullName (@item.AssignedAt.Value.ToString("g"))</li>
+        }
+    </ul>
+}
+ *@

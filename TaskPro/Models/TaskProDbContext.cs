@@ -185,8 +185,8 @@ public partial class TaskProDbContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.UpdatedBy).HasMaxLength(450);
 
-            entity.HasOne(d => d.Task).WithMany(p => p.TaskUpdates)
-                .HasForeignKey(d => d.TaskId)
+            entity.HasOne(d => d.TaskAssignment).WithMany(p => p.TaskUpdates)
+                .HasForeignKey(d => d.TaskAssignmentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__TaskUpdat__TaskI__6E01572D");
 

@@ -112,7 +112,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User logged in.");
                     var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
-                    await AddNameInClaims(user);
+                    await AddUserClaimsAsync(user);
                     return Redirect("/Home/Index");
                 }
                 if (result.RequiresTwoFactor)
@@ -135,25 +135,26 @@ namespace TaskPro.Areas.Identity.Pages.Account
             return Redirect("/Home/InternalServerError");
         }
 
-        private async System.Threading.Tasks.Task AddNameInClaims(ApplicationUser user)
+        private async System.Threading.Tasks.Task AddUserClaimsAsync(ApplicationUser user)
+        
         {
-            // Get existing claims
+            var claimsToUpdate = new Dictionary<string, string?>
+                {
+                    { ClaimTypes.GivenName, user.FullName },
+                    { ClaimTypes.PrimarySid, user.CreatedBy }
+                };
+
             var existingClaims = await _signInManager.UserManager.GetClaimsAsync(user);
 
-            // Check if the "name" claim already exists
-            var existingNameClaim = existingClaims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName);
-            if (existingNameClaim != null)
+            foreach (var claimType in claimsToUpdate.Keys)
             {
-                await _signInManager.UserManager.RemoveClaimAsync(user, existingNameClaim);
+                var existingClaim = existingClaims.FirstOrDefault(c => c.Type == claimType);
+                if (existingClaim != null)
+                    await _signInManager.UserManager.RemoveClaimAsync(user, existingClaim);
+                
+                var claimValue = claimsToUpdate[claimType] ?? string.Empty;
+                await _signInManager.UserManager.AddClaimAsync(user, new Claim(claimType, claimValue));
             }
-
-            // Add fresh "name" claim with full name
-            var claims = new List<Claim>
-                        {
-                            new(ClaimTypes.GivenName, user.FullName ?? "")
-                        };
-
-            await _signInManager.UserManager.AddClaimsAsync(user, claims);
         }
     }
 }

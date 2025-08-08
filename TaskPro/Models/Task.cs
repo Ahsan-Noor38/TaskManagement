@@ -26,6 +26,4 @@ public partial class Task
     public virtual AspNetUser CreatedByNavigation { get; set; } = null!;
 
     public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = new List<TaskAssignment>();
-
-    public virtual ICollection<TaskUpdate> TaskUpdates { get; set; } = new List<TaskUpdate>();
 }

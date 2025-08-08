@@ -12,7 +12,7 @@
         public enum TaskStatus
         {
             Pending = 1,
-            Approved = 2,
+            InProgress = 2,
             Completed = 3
         }
     }

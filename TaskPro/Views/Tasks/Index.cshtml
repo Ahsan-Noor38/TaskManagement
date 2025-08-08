@@ -1,8 +1,10 @@
 @using static TaskPro.Models.Enum
+
 @model IEnumerable<TaskPro.Models.Task>
 
 @{
     ViewData["Title"] = "Index";
+    var taskUsage = ViewBag.TaskUsage as Dictionary<int, bool>;
 }
 
 <div class="container-fluid px-4 mt-5">
@@ -58,8 +60,15 @@
                             </td>
                             <td>
                                 <a class="btn btn-dark btn-sm" asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                                <a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                                <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                                <a class="btn btn-secondary btn-sm" href="/TaskAssignment/TaskDetails/@item.Id">Task Details</a> |
+                                @if (taskUsage.ContainsKey(item.Id) && taskUsage[item.Id])
+                                {
+                                    <button class="btn btn-danger btn-sm" disabled>Delete</button>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                                }
                             </td>
                         </tr>
                     }

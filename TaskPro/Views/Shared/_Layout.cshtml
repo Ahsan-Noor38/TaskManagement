@@ -1,4 +1,5 @@
 ﻿@using System.Security.Claims
+@using TaskPro.Helper
 @{
     var currentDate = DateTime.UtcNow.Date;
     var username = string.Empty;
@@ -32,8 +33,8 @@
         <!-- Navbar Search-->
         <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
             <div class="input-group">
-                <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+                <input hidden class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                <button hidden class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
             </div>
         </form>
         <!-- Navbar-->
@@ -41,9 +42,11 @@
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="#!">Settings</a></li>
                     <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item" href="#!">Logout</a></li>
+                    <form asp-controller="Home" asp-action="Logout" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="dropdown-item">Logout</button>
+                    </form>
                 </ul>
             </li>
         </ul>
@@ -58,21 +61,26 @@
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
-                        <div class="sb-sidenav-menu-heading">User Management</div>
-                        <a class="nav-link" href="/Users/Index">
-                            <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
-                            Users
-                        </a>
-                        <div class="sb-sidenav-menu-heading">Addons</div>
+                        @if (User.IsInRole(StaticDetails.Roles.Admin))
+                        {
+                            <div class="sb-sidenav-menu-heading">User Management</div>
+                            <a class="nav-link" href="/Roles/Index">
+                                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                Roles
+                            </a>
+                            <a class="nav-link" href="/Users/Index">
+                                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                Users
+                            </a>
+                         }
+                        <div class="sb-sidenav-menu-heading">Task Management</div>
                         <a class="nav-link" href="/Tasks/Index">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Tasks
                         </a>
-                        <a class="nav-link" href="tables.html">
-                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                            Assign Task
-                        </a>
-                        <a class="nav-link" href="charts.html">
+                        <div class="sb-sidenav-menu-heading">Reports</div>
+
+                        <a class="nav-link" href="/Reports/TaskReport">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Reports
                         </a>
@@ -115,5 +123,3 @@
 </html>
 
 
-    // scaffold command
-    //Scaffold-DbContext "Name=ConnectionStrings:DefaultConnection" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Context TaskProDbContext -f

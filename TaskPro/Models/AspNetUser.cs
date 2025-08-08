@@ -37,6 +37,8 @@ public partial class AspNetUser
 
     public string FullName { get; set; } = null!;
 
+    public string? CreatedBy { get; set; }
+
     public virtual ICollection<AspNetUserClaim> AspNetUserClaims { get; set; } = new List<AspNetUserClaim>();
 
     public virtual ICollection<AspNetUserLogin> AspNetUserLogins { get; set; } = new List<AspNetUserLogin>();

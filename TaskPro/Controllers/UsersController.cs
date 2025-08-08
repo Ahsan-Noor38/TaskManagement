@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -17,12 +18,14 @@ namespace TaskPro.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly MailProvider _emailSender;
+        private readonly TaskProDbContext _db;
 
-        public UsersController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        public UsersController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, TaskProDbContext db)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _emailSender = new MailProvider(configuration);
+            _db = db;
         }
 
         public async Task<IActionResult> Index()
@@ -37,6 +40,8 @@ namespace TaskPro.Controllers
                 foreach (var user in users)
                 {
                     var roles = await _userManager.GetRolesAsync(user);
+                    bool hasTasks = await _db.TaskAssignments.AnyAsync(t => t.AssignedTo == user.Id);
+
                     if (!roles.Contains("Admin"))
                     {
                         userViewModels.Add(new UserViewModel
@@ -44,7 +49,8 @@ namespace TaskPro.Controllers
                             Id = user.Id,
                             Email = user.Email,
                             FullName = user.FullName,
-                            Role = roles.FirstOrDefault()
+                            Role = roles.FirstOrDefault(),
+                            HasTasks = hasTasks
                         });
                     }
                 }
@@ -56,6 +62,15 @@ namespace TaskPro.Controllers
 
         public IActionResult Create()
         {
+            var roles = _roleManager.Roles
+                                    .Select(r => new SelectListItem
+                                    {
+                                        Value = r.Name,
+                                        Text = r.Name
+                                    })
+                                    .ToList();
+
+            ViewBag.Roles = roles;
             return View();
         }
 
@@ -96,6 +111,16 @@ namespace TaskPro.Controllers
                     }
                 }
             }
+
+            var roles = _roleManager.Roles
+                                    .Select(r => new SelectListItem
+                                    {
+                                        Value = r.Name,
+                                        Text = r.Name
+                                    })
+                                    .ToList();
+
+            ViewBag.Roles = roles;
             return View(model);
         }
 
@@ -132,7 +157,15 @@ namespace TaskPro.Controllers
                 Role = roles.FirstOrDefault(),
                 FullName = user.FullName
             };
+            var rolesViewBag = _roleManager.Roles
+                                  .Select(r => new SelectListItem
+                                  {
+                                      Value = r.Name,
+                                      Text = r.Name
+                                  })
+                                  .ToList();
 
+            ViewBag.Roles = rolesViewBag;
             return View(model);
         }
 
@@ -174,6 +207,16 @@ namespace TaskPro.Controllers
                     ModelState.AddModelError("", error.Description);
                 }
             }
+
+            var roles = _roleManager.Roles
+                          .Select(r => new SelectListItem
+                          {
+                              Value = r.Name,
+                              Text = r.Name
+                          })
+                          .ToList();
+
+            ViewBag.Roles = roles;
             return View(model);
         }
 

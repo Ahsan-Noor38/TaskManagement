@@ -28,8 +28,12 @@ public class HomeController : Controller
     public IActionResult Index()
     {
         if (!User.Identity.IsAuthenticated)
-        {
+        { 
             return RedirectToPage("/Account/Login", new { returnUrl = Url.Action("Index", "Home") });
+        }
+        else if (User.IsInRole("Member"))
+        {
+            return RedirectToAction("Index", "Member");
         }
         var now = DateTime.Now;
         var taskUpdates = _context.Tasks

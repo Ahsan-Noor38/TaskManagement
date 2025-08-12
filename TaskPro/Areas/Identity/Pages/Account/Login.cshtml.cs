@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using TaskPro.Helper;
 using TaskPro.Models;
 
 namespace TaskPro.Areas.Identity.Pages.Account
@@ -16,12 +17,14 @@ namespace TaskPro.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger, UserManager<ApplicationUser> userManager)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -113,7 +116,15 @@ namespace TaskPro.Areas.Identity.Pages.Account
                     _logger.LogInformation("User logged in.");
                     var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
                     await AddUserClaimsAsync(user);
-                    return Redirect("/Home/Index");
+                    var roles = await _userManager.GetRolesAsync(user);
+
+                    // Redirect based on role
+                    if (roles.Contains(StaticDetails.Roles.Member))
+                        return Redirect("/Member/Index");
+
+                    else
+                        return Redirect("/Home/Index");
+
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -136,7 +147,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
         }
 
         private async System.Threading.Tasks.Task AddUserClaimsAsync(ApplicationUser user)
-        
+
         {
             var claimsToUpdate = new Dictionary<string, string?>
                 {
@@ -151,7 +162,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
                 var existingClaim = existingClaims.FirstOrDefault(c => c.Type == claimType);
                 if (existingClaim != null)
                     await _signInManager.UserManager.RemoveClaimAsync(user, existingClaim);
-                
+
                 var claimValue = claimsToUpdate[claimType] ?? string.Empty;
                 await _signInManager.UserManager.AddClaimAsync(user, new Claim(claimType, claimValue));
             }

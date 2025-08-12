@@ -19,9 +19,11 @@ namespace TaskPro.Controllers
         }
 
         // GET: Tasks
-        public async Task<IActionResult> Index(int? statusFilter)
+        public async Task<IActionResult> Index()
         {
-            var taskProDbContext = _context.Tasks.Include(t => t.CreatedByNavigation);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var taskProDbContext = _context.Tasks.Where(t => t.CreatedBy == userId).Include(t => t.CreatedByNavigation);
             await taskProDbContext.ForEachAsync(r => r.Description = r.Description.Length > 15 ? r.Description.Substring(0, 15) + "..." : r.Description);
 
             // Create dictionary of { taskId → isAssigned }
@@ -108,7 +110,7 @@ namespace TaskPro.Controllers
 
             try
             {
-                var userId = HttpContext.Session.GetString("UserId");
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var taskEntity = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id);
 
                 if (taskEntity is null)

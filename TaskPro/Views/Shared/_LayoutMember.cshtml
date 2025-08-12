@@ -1,0 +1,209 @@
+﻿@inject TaskPro.Models.TaskProDbContext _context
+@using System.Security.Claims
+@using TaskPro.Helper
+@{
+    var currentDate = DateTime.UtcNow.Date;
+    var username = string.Empty;
+    var userRole = string.Empty;
+    var userId = string.Empty;
+    @if (User.Identity.IsAuthenticated)
+    {
+        userRole = User.Claims.Where(s => s.Type is "role" or ClaimTypes.Role).FirstOrDefault()?.Value;
+        username = User.FindFirst(ClaimTypes.GivenName)?.Value;
+        userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+    }
+    var notifications = new List<TaskPro.Models.Notification>();
+    if (!string.IsNullOrEmpty(userId))
+    {
+        notifications = _context.Notifications
+            .Where(n => n.UserId == userId)
+            .OrderByDescending(n => n.CreatedAt)
+            .Take(5)
+            .ToList();
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Member Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(90deg, #2c3e50, #34495e);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.4rem;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link {
+            transition: 0.3s ease;
+        }
+
+            .nav-link:hover {
+                color: #1abc9c !important;
+            }
+
+        .user-avatar {
+            width: 35px; /* Slightly bigger */
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 8px;
+            border: 2px solid #1abc9c;
+            vertical-align: middle;
+        }
+
+        .nav-link.dropdown-toggle.d-flex {
+            align-items: center; /* Vertically align avatar + text */
+        }
+
+        #userDropdown span {
+            font-size: 1rem; /* Match text size with navbar */
+            font-weight: 500;
+            color: white;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: #bdc3c7;
+            padding: 15px 0;
+            text-align: center;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="@Url.Action("Index", "Member")">
+                TaskPro Member
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#memberNav" aria-controls="memberNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="memberNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Index", "Member")">
+                            <i class="fas fa-list-check"></i> My Tasks
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Change ms-auto to ml-auto for Bootstrap 4 -->
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle mt-2" href="#" id="notifDropdown" role="button"
+                           data-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            @if (notifications.Any(n => n.IsRead.HasValue && !n.IsRead.Value))
+                            {
+                                <span class="badge badge-danger badge-sm">
+                                    @notifications.Count(n => n.IsRead.HasValue && !n.IsRead.Value)
+                                </span>
+                            }
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow-lg" aria-labelledby="notifDropdown">
+                            @if (!notifications.Any())
+                            {
+                                <span class="dropdown-item text-muted">No new notifications</span>
+                            }
+                            else
+                            {
+                                @foreach (var notif in notifications)
+                                {
+                                    if (notif.IsRead.Value)
+                                    {
+                                        <a class="dropdown-item text-muted" href="#">
+                                            @notif.Message
+                                            <br />
+                                            <small class="text-muted">@notif.CreatedAt?.ToString("MMM dd, yyyy")</small>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="dropdown-item font-weight-bold" href="javascript:void(0);" onclick="markAsRead(@notif.Id)">
+                                            @notif.Message
+                                            <br />
+                                            <small class="text-muted">@notif.CreatedAt?.ToString("MMM dd, yyyy")</small>
+                                        </a>
+                                        <form id="antiForgeryForm">
+                                            @Html.AntiForgeryToken()
+                                        </form>
+                                    }
+                                }
+                            }
+                        </div>
+                    </li>
+
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
+                            <img src="/Admin/default-avatar1.png" alt="User Avatar" class="user-avatar" />
+                            <span>@username</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow-lg" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="@Url.Action("Profile", "Account")">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <form asp-controller="Home" asp-action="Logout" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item">Logout</button>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+
+    <main class="container-fluid mt-4">
+        @RenderBody()
+    </main>
+
+    <footer>
+        &copy; @DateTime.Now.Year - TaskPro | Member Dashboard
+    </footer>
+    <script>
+        function markAsRead(notificationId) {
+            const token = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]').value;
+
+            fetch(`/Member/MarkAsReadAsync`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token
+                },
+                body: `notificationId=${notificationId}`
+            })
+            .then(res => {
+                if (res.ok) {
+                    location.reload();
+                }
+            });
+        }
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

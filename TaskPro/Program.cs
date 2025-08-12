@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TaskPro.Controllers;
 using TaskPro.Data;
 using TaskPro.Models;
 
@@ -31,6 +32,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

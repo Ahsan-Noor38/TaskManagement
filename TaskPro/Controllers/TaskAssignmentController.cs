@@ -14,11 +14,13 @@ namespace TaskPro.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly TaskProDbContext _db;
+        private readonly INotificationService _notificationService;
 
-        public TaskAssignmentController(UserManager<ApplicationUser> userManager, TaskProDbContext db)
+        public TaskAssignmentController(UserManager<ApplicationUser> userManager, TaskProDbContext db, INotificationService notificationService)
         {
             _userManager = userManager;
             _db = db;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
@@ -29,7 +31,7 @@ namespace TaskPro.Controllers
                 return NotFound();
 
             bool isAdmin = User.IsInRole(StaticDetails.Roles.Admin);
-            var createdById = isAdmin ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value :User.FindFirst(ClaimTypes.PrimarySid)?.Value;
+            var createdById = isAdmin ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : User.FindFirst(ClaimTypes.PrimarySid)?.Value;
 
             var users = await _userManager.Users.Where(u => u.CreatedBy == createdById).ToListAsync();
             var availableUsers = new List<SelectListItem>();
@@ -93,6 +95,10 @@ namespace TaskPro.Controllers
 
                 _db.TaskUpdates.Add(taskStatus);
                 await _db.SaveChangesAsync();
+
+                var task = await _db.Tasks.FirstOrDefaultAsync(t => t.Id == taskId);
+                if (task is not null)
+                    await _notificationService.AddNotificationAsync(selectedUserId, $"You have been assigned a new task {task.Title}");
             }
 
             return RedirectToAction("TaskDetails", new { id = taskId });
@@ -103,14 +109,24 @@ namespace TaskPro.Controllers
         {
             // Your logic here to remove the user from task
             var taskUser = await _db.TaskAssignments
+                                    .Include(t=>t.TaskUpdates)
                                     .FirstOrDefaultAsync(x => x.TaskId == taskId && x.AssignedTo == userId);
 
             if (taskUser != null)
             {
+                _db.TaskUpdates.RemoveRange(taskUser.TaskUpdates);
+
                 _db.TaskAssignments.Remove(taskUser);
                 await _db.SaveChangesAsync();
-            }
 
+                var task = await _db.Tasks.FirstOrDefaultAsync(t => t.Id == taskId);
+
+                if (task != null)               
+                    await _notificationService.AddNotificationAsync(
+                        userId,
+                        $"You have been unassigned from the task '{task.Title}'"
+                    );        
+            }
             return RedirectToAction("TaskDetails", new { id = taskId });
         }
 

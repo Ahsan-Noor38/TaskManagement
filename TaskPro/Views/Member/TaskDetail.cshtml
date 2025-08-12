@@ -1,0 +1,135 @@
+﻿@model TaskPro.Models.TaskAssignment
+
+@{
+    Layout = "_LayoutMember";
+    ViewData["Title"] = "Task Details";
+}
+
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<div class="content mt-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body task-detail">
+                        <!-- Creator Info -->
+                        <div class="media align-items-center mb-3">
+                            <img class="mr-3 rounded-circle border"
+                                 src="/Admin/default-avatar.png"
+                                 alt="Creator Avatar"
+                                 style="width: 50px; height: 50px;">
+
+                            <div class="media-body d-flex align-items-center justify-content-between w-100">
+                                <div>
+                                    <h5 class="mb-0">@Model.Task.CreatedByNavigation.FullName</h5>
+                                    <small class="text-muted">Created by</small>
+                                    <div>
+                                        <span class="badge
+                                        @(Model.Task.Priority.ToString().ToLower() == "high" ? "badge-danger" : Model.Task.Priority.ToString().ToLower() == "medium" ? "badge-warning" : "badge-success")">
+                                            @((TaskPro.Models.Enum.TaskPriority)Model.Task.Priority)
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <form asp-action="UpdateTaskStatus" asp-controller="Member" method="post" class="form-inline text-right">
+                                    <input type="hidden" name="assignmentId" value="@Model.Id" />
+
+                                    <div class="d-flex flex-column align-items-end">
+                                        <small class="text-muted mb-1" style="color:darkred">Update Status</small>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <select name="status" class="form-select form-select-sm border-primary rounded-pill shadow-sm px-3" style="background-color:#d1ecf1; color:#0c5460">
+                                                @foreach (TaskPro.Models.Enum.TaskStatus status in System.Enum.GetValues(typeof(TaskPro.Models.Enum.TaskStatus)))
+                                                {
+                                                    var isSelected = (TaskPro.Models.Enum.TaskStatus?)Model.TaskUpdates?.LastOrDefault()?.Status == status;
+                                                    @if (isSelected)
+                                                    {
+                                                        <option value="@status" selected>@status</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@status">@status</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <button type="submit" class="btn btn-outline-info btn-sm rounded-pill px-3 py-1 shadow-sm">
+                                                <img src="/Admin/Updatebutton.png" alt="Update" style="width:16px;height:16px;">
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- Title & Description -->
+                        <h4 class="mb-3 font-weight-bold">@Model.Task.Title</h4>
+                        <p class="text-muted">@Model.Task.Description</p>
+
+                        <!-- Dates -->
+                        <ul class="list-inline task-dates mb-4 mt-4">
+                            <li class="mr-4">
+                                <h6 class="mb-1 text-secondary">Start Date</h6>
+                                <p class="mb-0">
+                                    @Model.Task.CreatedAt.ToString("dd MMM yyyy")
+                                    <small class="text-muted">@Model.Task.CreatedAt.ToString("hh:mm tt")</small>
+                                </p>
+                            </li>
+                            <li>
+                                <h6 class="mb-1 text-secondary">Due Date</h6>
+                                <p class="mb-0">
+                                    @Model.Task.Deadline.ToString("dd MMM yyyy")
+                                    <small class="text-muted">@Model.Task.Deadline.ToString("hh:mm tt")</small>
+                                </p>
+                            </li>
+                        </ul>
+
+                        <!-- Assigned Members -->
+                        <div class="assign-team mt-4">
+                            <h6 class="mb-3 text-secondary">Assigned Members</h6>
+                            @if (Model.Task.TaskAssignments != null && Model.Task.TaskAssignments.Any())
+                            {
+                                <div class="d-flex align-items-start">
+                                    @foreach (var assignment in Model.Task.TaskAssignments)
+                                    {
+                                        <div class="text-center mx-2">
+                                            <img class="rounded-circle thumb-sm border mb-1"
+                                                 src="/Admin/default-avatar.png" />
+                                            <div class="small text-muted">@assignment.AssignedToNavigation?.FullName</div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No team members assigned.</p>
+                            }
+                        </div>
+
+                        <!-- Back Button -->
+                        <div class="mt-4">
+                            <a href="@Url.Action("Index", "Member")" class="btn btn-outline-primary">
+                                <i class="fa fa-arrow-left"></i> Back to Tasks
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .thumb-sm {
+        height: 36px;
+        width: 36px;
+    }
+
+    .task-detail .task-dates li {
+        width: 50%;
+        float: left;
+    }
+
+        .task-detail .task-dates li h6 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+</style>

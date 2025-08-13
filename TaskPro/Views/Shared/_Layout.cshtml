@@ -39,6 +39,18 @@
         </form>
         <!-- Navbar-->
         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+            <li class="nav-item dropdown" id="notificationDropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-bell"></i>
+                    <span id="notifCount" class="badge bg-danger badge-sm" style="display:none;"></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notifDropdown" style="min-width: 300px;">
+                    <li id="notifList">
+                        <span class="dropdown-item text-muted">Loading...</span>
+                    </li>
+                </ul>
+            </li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -72,7 +84,7 @@
                                 <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
                                 Users
                             </a>
-                         }
+                        }
                         <div class="sb-sidenav-menu-heading">Task Management</div>
                         <a class="nav-link" href="/Tasks/Index">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
@@ -118,7 +130,65 @@
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
     <script src="/Admin/js/datatables-simple-demo.js"></script>
     @RenderSection("Scripts", required: false)
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            loadNotifications();
 
+            // Load notifications
+            function loadNotifications() {
+                fetch('/Home/GetAllNotifications') // Your NotificationController action
+                    .then(response => response.json())
+                    .then(data => {
+                        const notifList = document.getElementById("notifList");
+                        const notifCount = document.getElementById("notifCount");
+
+                        notifList.innerHTML = "";
+
+                        if (!data || data.length === 0) {
+                            notifList.innerHTML = '<span class="dropdown-item text-muted">No new notifications</span>';
+                            notifCount.style.display = "none";
+                        } else {
+                               const today = new Date();
+                                const newNotifs = data.filter(n => {
+                                    const createdDate = new Date(n.createdAt);
+                                    return createdDate.toDateString() === today.toDateString();
+                                });
+
+                                // Show "New" if there are notifications today, else show count
+                                if (newNotifs.length > 0) {
+                                    notifCount.innerText = "New";
+                                } else {
+                                    notifCount.innerText = data.length;
+                                }
+                                notifCount.style.display = "inline-block";
+
+                            data.forEach(n => {
+                                let li = document.createElement("li");
+                                li.innerHTML = `
+                                    <a class="dropdown-item ${n.isRead ? 'text-muted small' : 'fw-bold small'}">
+                                        ${n.message}
+                                        <br />
+                                        <small class="text-muted">
+                                        ${new Date(n.createdAt).toLocaleString('en-US', {
+                                            month: 'short',
+                                            day: '2-digit',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}</small>
+                                    </a>`;
+                                notifList.appendChild(li);
+                            });
+                        }
+                    });
+            }
+
+            // Mark notification as read
+            window.markAsRead = function (id) {
+                fetch(`/Notification/MarkAsRead?notificationId=${id}`, { method: "POST" });
+            }
+        });
+    </script>
 </body>
 </html>
 

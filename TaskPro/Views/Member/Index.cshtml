@@ -1,95 +1,49 @@
 ﻿@model MemberTasksViewModel
 @{
-    Layout = "_LayoutMember";
+    Layout = "_LayoutMember"; 
+    var todayDeadlineTasks = Model.UpcomingTasks
+        .Concat(Model.InProgressTasks)
+        .Where(t => t.Task.Deadline.Date == DateTime.Today.Date)
+        .ToList();
 }
-
 <style>
-    .filter-form {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        align-items: flex-end;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    .task-clickable {
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
     }
 
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* For inline label + dropdown (Priority, Status) */
-    .filter-inline {
-        flex-direction: row;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .filter-label {
-        font-weight: 500;
-        font-size: 0.9rem;
-        margin-bottom: 0.25rem;
-        white-space: nowrap;
-    }
-
-    .filter-inline .filter-label {
-        margin-bottom: 0;
-    }
-
-    select, input {
-        min-width: 160px;
-    }
-    .thumb-sm {
-        height: 36px;
-        width: 36px;
-    }
-
-    .card-box {
-        padding: 20px;
-        border-radius: 3px;
-        margin-bottom: 30px;
-        background-color: #fff;
-    }
-
-    taskList {
-        min-height: 40px;
-        margin-bottom: 0
-    }
-
-    .taskList li {
-        background-color: #fff;
-        border: 1px solid rgba(121, 121, 121, .2);
-        padding: 10px;
-        margin-bottom: 20px;
-        border-radius: 3px
-    }
-
-        .taskList li:last-of-type {
-            margin-bottom: 0
-        }
-
-    .taskList a {
-        font-size: 13px
-    }
-
-    .taskList .checkbox {
-        margin-left: 20px;
-        margin-top: 5px
-    }
-
-    .text-muted {
-        color: #98a6ad !important;
-    }
-</style>
-
+        .task-clickable:hover {
+            background-color: #f8d7da; /* light red hover */
+        }</style>
+<link href="/css/StyleSheet2.css" rel="stylesheet">
 <div class="content">
     <div class="container">
+        @if (todayDeadlineTasks.Any())
+        {
+            <div class="alert alert-danger shadow-sm border-0 rounded-3 p-3 mb-4">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-clock fa-lg me-2"></i>
+                    <h5 class="mb-0 fw-bold">Today’s Deadlines</h5>
+                </div>
+                <ul class="list-unstyled mb-0 mt-2">
+                    @foreach (var task in todayDeadlineTasks)
+                    {
+                        <li onclick="location.href='@Url.Action("TaskDetail", "Member", new { id = task.Id })'"
+                            class="mb-2 d-flex justify-content-between align-items-center bg-white rounded p-2 shadow-sm task-clickable">
+                            <span>
+                                <i class="fas fa-tasks text-danger me-2"></i>
+                                <strong>@task.Task.Title</strong>
+                            </span>
+                            <span class="badge bg-danger-subtle text-danger border">
+                                @task.Task.Deadline.ToString("hh:mm tt")
+                            </span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
         <div class="row">
-
             <form method="get" asp-action="Index" class="filter-form mb-4">
-
                 <!-- Priority -->
                 <div class="filter-group">
                     <label class="filter-label">Priority</label>
@@ -163,8 +117,8 @@
                 <div class="card-box">
                     <h4 class="text-dark header-title">ToDo</h4>
                     <p class="text-muted m-b-30 font-13">
-                        This is your to-do list for tasks that will begin soon.
-                        Use this space to prepare in advance and ensure you have everything you need.
+                        This is your to-do list for your tasks that will begin soon.
+                        Use this space to prepare in advance and ensure you have everything you need and required.
 
                     </p>
                     <ul class="sortable-list taskList list-unstyled ui-sortable" id="upcoming">

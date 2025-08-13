@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using TaskPro.Models;
 
 namespace TaskPro.Controllers
 {
+    [Authorize]
     public class ReportsController : Controller
     {
         private readonly TaskProDbContext _db;

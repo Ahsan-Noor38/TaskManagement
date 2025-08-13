@@ -1,0 +1,73 @@
+﻿body {
+    background-color: #f4f6f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar {
+    background: linear-gradient(90deg, #2c3e50, #34495e);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
+}
+
+.nav-link {
+    transition: 0.3s ease;
+}
+
+    .nav-link:hover {
+        color: #1abc9c !important;
+    }
+
+.user-avatar {
+    width: 35px; /* Slightly bigger */
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+    border: 2px solid #1abc9c;
+    vertical-align: middle;
+}
+
+.nav-link.dropdown-toggle.d-flex {
+    align-items: center; /* Vertically align avatar + text */
+}
+
+#userDropdown span {
+    font-size: 1rem; /* Match text size with navbar */
+    font-weight: 500;
+    color: white;
+}
+
+footer {
+    background: #2c3e50;
+    color: #bdc3c7;
+    padding: 15px 0;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.modal.right .modal-dialog {
+    position: fixed;
+    margin: auto;
+    width: 400px;
+    height: 100%;
+    right: 0;
+    top: 0;
+}
+
+.modal.right .modal-content {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.modal.right.fade .modal-dialog {
+    transform: translate3d(100%, 0, 0);
+}
+
+.modal.right.fade.show .modal-dialog {
+    transform: translate3d(0, 0, 0);
+}

@@ -1,0 +1,85 @@
+﻿/* Make paragraphs and normal text smaller */
+p, .card-box, .filter-label, .taskList a {
+    font-size: 0.8rem; /* Bootstrap default ~1rem, now 90% */
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* For inline label + dropdown (Priority, Status) */
+.filter-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-label {
+    font-weight: 500;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+}
+
+.filter-inline .filter-label {
+    margin-bottom: 0;
+}
+
+select, input {
+    min-width: 160px;
+}
+
+.thumb-sm {
+    height: 36px;
+    width: 36px;
+}
+
+.card-box {
+    padding: 20px;
+    border-radius: 3px;
+    margin-bottom: 30px;
+    background-color: #fff;
+}
+
+taskList {
+    min-height: 40px;
+    margin-bottom: 0
+}
+
+.taskList li {
+    background-color: #fff;
+    border: 1px solid rgba(121, 121, 121, .2);
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 3px
+}
+
+    .taskList li:last-of-type {
+        margin-bottom: 0
+    }
+
+.taskList a {
+    font-size: 13px
+}
+
+.taskList .checkbox {
+    margin-left: 20px;
+    margin-top: 5px
+}
+
+.text-muted {
+    color: #98a6ad !important;
+}
+

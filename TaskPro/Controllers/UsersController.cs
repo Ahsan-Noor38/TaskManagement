@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -72,6 +73,17 @@ namespace TaskPro.Controllers
 
             ViewBag.Roles = roles;
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResendEmail(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user != null)
+                await SendSetPasswordEmail(user);
+
+            TempData["Message"] = "Email resent successfully!";
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]

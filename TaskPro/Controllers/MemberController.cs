@@ -11,7 +11,13 @@ namespace TaskPro.Controllers
     public class MemberController : Controller
     {
         private readonly TaskProDbContext _db = new();
-        public MemberController(TaskProDbContext db) => _db = db;
+        public MemberController(TaskProDbContext db, INotificationService notificationService)
+        {
+            _db = db;
+            _notificationService = notificationService;
+        }
+
+        private readonly INotificationService _notificationService;
 
         public IActionResult Index(string priority, string status, string search, DateTime? fromDate, DateTime? toDate)
         {
@@ -91,17 +97,17 @@ namespace TaskPro.Controllers
         }
 
         [HttpPost]
-        public IActionResult UpdateTaskStatus(int assignmentId, TaskPro.Models.Enum.TaskStatus status)
+        public async Task<IActionResult> UpdateTaskStatus(int assignmentId, TaskPro.Models.Enum.TaskStatus status)
         {
             // Find the task assignment by assignmentId
             var taskAssignment = _db.TaskAssignments
                 .Include(t => t.TaskUpdates)
+                .Include(t => t.Task)
                 .FirstOrDefault(t => t.Id == assignmentId);
 
             if (taskAssignment == null)
-            {
                 return NotFound();
-            }
+
             var taskStatus = taskAssignment.TaskUpdates.FirstOrDefault();
             if (taskStatus is not null)
             {
@@ -115,12 +121,18 @@ namespace TaskPro.Controllers
             _db.TaskUpdates.Update(taskStatus);
             _db.SaveChanges();
 
+            var creatorId = taskAssignment.Task.CreatedBy;
+            await _notificationService.AddNotificationAsync(
+                creatorId,
+                $"The task '{taskAssignment.Task.Title}' status has been updated to '{status}'."
+            );
+
             // Redirect back to TaskDetail view with the same assignmentId
             return RedirectToAction("TaskDetail", new { id = assignmentId });
         }
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MarkAsReadAsync(int notificationId)
+        public async Task<IActionResult> MarkAsReadAsync([FromBody] int notificationId)
         {
             var notification = await _db.Notifications.FindAsync(notificationId);
             if (notification != null && !(notification.IsRead ?? false))

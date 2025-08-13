@@ -4,6 +4,18 @@
     Layout = "_LayoutMember";
     ViewData["Title"] = "Task Details";
 }
+<style>
+    .assign-team-members {
+        display: flex;
+        flex-wrap: wrap; /* allows going to a new line */
+        gap: 1rem; /* space between members */
+    }
+
+        .assign-team-members > div {
+            flex: 0 0 auto; /* prevents stretching */
+            text-align: center;
+        }
+</style>
 
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" />
 
@@ -87,10 +99,10 @@
                             <h6 class="mb-3 text-secondary">Assigned Members</h6>
                             @if (Model.Task.TaskAssignments != null && Model.Task.TaskAssignments.Any())
                             {
-                                <div class="d-flex align-items-start">
+                                <div class="assign-team-members">
                                     @foreach (var assignment in Model.Task.TaskAssignments)
                                     {
-                                        <div class="text-center mx-2">
+                                        <div>
                                             <img class="rounded-circle thumb-sm border mb-1"
                                                  src="/Admin/default-avatar.png" />
                                             <div class="small text-muted">@assignment.AssignedToNavigation?.FullName</div>
@@ -103,6 +115,7 @@
                                 <p class="text-muted">No team members assigned.</p>
                             }
                         </div>
+
 
                         <!-- Back Button -->
                         <div class="mt-4">

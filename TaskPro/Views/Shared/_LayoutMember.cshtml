@@ -31,60 +31,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        body {
-            background-color: #f4f6f9;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .navbar {
-            background: linear-gradient(90deg, #2c3e50, #34495e);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.4rem;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-link {
-            transition: 0.3s ease;
-        }
-
-            .nav-link:hover {
-                color: #1abc9c !important;
-            }
-
-        .user-avatar {
-            width: 35px; /* Slightly bigger */
-            height: 35px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 8px;
-            border: 2px solid #1abc9c;
-            vertical-align: middle;
-        }
-
-        .nav-link.dropdown-toggle.d-flex {
-            align-items: center; /* Vertically align avatar + text */
-        }
-
-        #userDropdown span {
-            font-size: 1rem; /* Match text size with navbar */
-            font-weight: 500;
-            color: white;
-        }
-
-        footer {
-            background: #2c3e50;
-            color: #bdc3c7;
-            padding: 15px 0;
-            text-align: center;
-            margin-top: 40px;
-        }
-    </style>
+    <link href="/css/StyleSheet1.css" rel="stylesheet">
+ 
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -111,10 +59,10 @@
                         <a class="nav-link dropdown-toggle mt-2" href="#" id="notifDropdown" role="button"
                            data-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-bell"></i>
-                            @if (notifications.Any(n => n.IsRead.HasValue && !n.IsRead.Value))
+                            @if (notifications.Any(n => n.CreatedAt.Value.Date == currentDate.Date))
                             {
                                 <span class="badge badge-danger badge-sm">
-                                    @notifications.Count(n => n.IsRead.HasValue && !n.IsRead.Value)
+                                    New
                                 </span>
                             }
                         </a>
@@ -129,23 +77,31 @@
                                 {
                                     if (notif.IsRead.Value)
                                     {
-                                        <a class="dropdown-item text-muted" href="#">
+                                        <a class="dropdown-item text-muted small" href="#">
                                             @notif.Message
                                             <br />
-                                            <small class="text-muted">@notif.CreatedAt?.ToString("MMM dd, yyyy")</small>
+                                            <small class="text-muted">@notif.CreatedAt?.ToString("g")</small>
                                         </a>
                                     }
                                     else
                                     {
-                                        <a class="dropdown-item font-weight-bold" href="javascript:void(0);" onclick="markAsRead(@notif.Id)">
+                                        <a class="dropdown-item font-weight-bold small" href="javascript:void(0)"
+                                           onclick="markAsRead(@notif.Id)">
                                             @notif.Message
                                             <br />
-                                            <small class="text-muted">@notif.CreatedAt?.ToString("MMM dd, yyyy")</small>
+                                            <small class="text-muted">@notif.CreatedAt?.ToString("g")</small>
                                         </a>
                                         <form id="antiForgeryForm">
                                             @Html.AntiForgeryToken()
                                         </form>
                                     }
+                                }
+                                @if (notifications.Count >= 5)
+                                {
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item text-primary" href="javascript:void(0)" onclick="openNotificationsModal()">
+                                        View All Notifications
+                                    </a>
                                 }
                             }
                         </div>
@@ -158,10 +114,6 @@
                             <span>@username</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right shadow-lg" aria-labelledby="userDropdown">
-                            <a class="dropdown-item" href="@Url.Action("Profile", "Account")">
-                                <i class="fas fa-user"></i> Profile
-                            </a>
-                            <div class="dropdown-divider"></div>
                             <form asp-controller="Home" asp-action="Logout" method="post" class="d-inline">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="dropdown-item">Logout</button>
@@ -173,7 +125,21 @@
 
         </div>
     </nav>
-
+    <div class="modal right fade" id="allNotificationsModal" tabindex="-1" role="dialog" aria-labelledby="allNotificationsLabel">
+        <div class="modal-dialog" role="document" style="max-width: 400px; margin: 0; height: 100%; right: 0; position: fixed;">
+            <div class="modal-content" style="height: 100%;">
+                <div class="modal-header">
+                    <h5 class="modal-title">All Notifications</h5>
+                  @*   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button> *@
+                </div>
+                <div class="modal-body" id="allNotificationsList">
+                    <!-- Will be filled dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
     <main class="container-fluid mt-4">
         @RenderBody()
     </main>
@@ -182,22 +148,50 @@
         &copy; @DateTime.Now.Year - TaskPro | Member Dashboard
     </footer>
     <script>
-        function markAsRead(notificationId) {
-            const token = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]').value;
-
-            fetch(`/Member/MarkAsReadAsync`, {
+                  function markAsRead(notificationId) {
+            fetch('/Member/MarkAsReadAsync', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'RequestVerificationToken': token
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `notificationId=${notificationId}`
+                body: 'notificationId=' + encodeURIComponent(notificationId)
             })
             .then(res => {
                 if (res.ok) {
                     location.reload();
                 }
-            });
+            })
+            .catch(err => console.error('Error:', err));
+        }
+
+            function openNotificationsModal() {
+            fetch('/Home/GetAllNotifications') // you'll make this action
+                .then(response => response.json())
+                .then(data => {
+                    let container = document.getElementById("allNotificationsList");
+                    container.innerHTML = "";
+
+                    if (data.length === 0) {
+                        container.innerHTML = "<p class='text-muted'>No notifications found.</p>";
+                    } else {
+                        data.forEach(n => {
+                            let item = document.createElement("div");
+                            item.className = "mb-2 p-2 border-bottom";
+                            item.innerHTML = `<div class="${n.isRead ? 'text-muted small' : 'font-weight-bold small'}">${n.message}</div>
+                                                   <small class="text-muted">
+                                                    ${new Date(n.createdAt).toLocaleString('en-US', {
+                                                        month: 'short',
+                                                        day: '2-digit',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}</small>`;
+                            container.appendChild(item);
+                        });
+                    }
+
+                    $('#allNotificationsModal').modal('show');
+                });
         }
     </script>
 

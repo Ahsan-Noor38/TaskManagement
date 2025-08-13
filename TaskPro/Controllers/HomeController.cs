@@ -98,4 +98,20 @@ public class HomeController : Controller
         await _signInManager.SignOutAsync();
         return Redirect("/Identity/Account/Login");
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllNotifications()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var allNotifications = await _context.Notifications
+                                        .Where(n => n.UserId == userId)
+                                        .OrderByDescending(n => n.CreatedAt)
+                                        .ToListAsync();
+        return Json(allNotifications.Select(n => new {
+            id = n.Id,
+            message = n.Message,
+            isRead = n.IsRead ?? false,
+            createdAt = n.CreatedAt
+        }));
+    }
 }

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
@@ -74,24 +74,53 @@ namespace TaskPro.Areas.Identity.Pages.Account
             {
                 ModelState.AddModelError(string.Empty, "Email Already Confirmed.");
                 return Page();
-            }
+            }  // Check user role
+            var roles = await _userManager.GetRolesAsync(user);
+            var isAdmin = roles.Contains("Admin");
 
-            var userId = await _userManager.GetUserIdAsync(user);
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            if (!isAdmin && !user.EmailConfirmed)
+            {
+                // For non-admins → send set password link
+                await SendSetPasswordEmail(user);
+                ModelState.AddModelError(string.Empty, "Set password link sent. Please check your email.");
+                return Page();
+            }
+            else
+            {
+                var userId = await _userManager.GetUserIdAsync(user);
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                var callbackUrl = Url.Page(
+                    "/Account/ConfirmEmail",
+                    pageHandler: null,
+                    values: new { userId = userId, code = code },
+                    protocol: Request.Scheme);
+
+                _emailSender.SendEmail(
+                    Input.Email,
+                    "Confirm your email",
+                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
+                return Page();
+            }
+        }
+
+        private async System.Threading.Tasks.Task SendSetPasswordEmail(ApplicationUser user)
+        {
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             var callbackUrl = Url.Page(
-                "/Account/ConfirmEmail",
+                "/Account/ResetPassword",
                 pageHandler: null,
-                values: new { userId = userId, code = code },
+                values: new { area = "Identity", code },
                 protocol: Request.Scheme);
 
-            _emailSender.SendEmail(
-                Input.Email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-            ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
-            return Page();
+            var emailResult = _emailSender.SendEmail(
+                                        user.Email,
+                                        "Set New Password",
+                                        $"Please set your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
         }
     }
 }

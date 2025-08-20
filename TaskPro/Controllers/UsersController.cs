@@ -64,6 +64,7 @@ namespace TaskPro.Controllers
         public IActionResult Create()
         {
             var roles = _roleManager.Roles
+                                    .Where(r => r.Name != "Admin") // exclude Admin
                                     .Select(r => new SelectListItem
                                     {
                                         Value = r.Name,
@@ -125,12 +126,13 @@ namespace TaskPro.Controllers
             }
 
             var roles = _roleManager.Roles
-                                    .Select(r => new SelectListItem
-                                    {
-                                        Value = r.Name,
-                                        Text = r.Name
-                                    })
-                                    .ToList();
+                                   .Where(r => r.Name != "Admin") // exclude Admin
+                                   .Select(r => new SelectListItem
+                                   {
+                                       Value = r.Name,
+                                       Text = r.Name
+                                   })
+                                   .ToList();
 
             ViewBag.Roles = roles;
             return View(model);
@@ -168,14 +170,15 @@ namespace TaskPro.Controllers
                 Email = user.Email,
                 Role = roles.FirstOrDefault(),
                 FullName = user.FullName
-            };
+            }; 
             var rolesViewBag = _roleManager.Roles
-                                  .Select(r => new SelectListItem
-                                  {
-                                      Value = r.Name,
-                                      Text = r.Name
-                                  })
-                                  .ToList();
+                                   .Where(r => r.Name != "Admin") // exclude Admin
+                                   .Select(r => new SelectListItem
+                                   {
+                                       Value = r.Name,
+                                       Text = r.Name
+                                   })
+                                   .ToList();
 
             ViewBag.Roles = rolesViewBag;
             return View(model);
@@ -221,12 +224,13 @@ namespace TaskPro.Controllers
             }
 
             var roles = _roleManager.Roles
-                          .Select(r => new SelectListItem
-                          {
-                              Value = r.Name,
-                              Text = r.Name
-                          })
-                          .ToList();
+                        .Where(r => r.Name != "Admin") // exclude Admin
+                        .Select(r => new SelectListItem
+                        {
+                            Value = r.Name,
+                            Text = r.Name
+                        })
+                        .ToList();
 
             ViewBag.Roles = roles;
             return View(model);

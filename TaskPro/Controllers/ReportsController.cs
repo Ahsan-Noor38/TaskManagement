@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Text;
 using TaskPro.Helper;
 using TaskPro.Models;
@@ -82,7 +83,8 @@ namespace TaskPro.Controllers
             var report = new List<TaskReportViewModel>();
             foreach (var task in tasks)
             {
-                foreach (var assignment in task.TaskAssignments)
+                var assignments = string.IsNullOrEmpty(filter.UserId) ? task.TaskAssignments : task.TaskAssignments.Where(a => a.AssignedTo == filter.UserId);
+                foreach (var assignment in assignments)
                 {
                     var latestUpdate = assignment.TaskUpdates
                         .OrderByDescending(u => u.UpdatedAt)
@@ -124,9 +126,13 @@ namespace TaskPro.Controllers
             if (string.IsNullOrEmpty(value)) return "";
             return "\"" + value.Replace("\"", "\"\"") + "\"";
         }
+
         private async Task<List<SelectListItem>> GetAvailableUsersAsync()
         {
-            var users = _userManager.Users.ToList();
+            bool isAdmin = User.IsInRole(StaticDetails.Roles.Admin);
+            var createdById = isAdmin ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : User.FindFirst(ClaimTypes.PrimarySid)?.Value;
+
+            var users = await _userManager.Users.Where(u => u.CreatedBy == createdById).ToListAsync();
             var availableUsers = new List<SelectListItem>();
 
             foreach (var user in users)
@@ -141,7 +147,6 @@ namespace TaskPro.Controllers
                     });
                 }
             }
-
             return availableUsers;
         }
 

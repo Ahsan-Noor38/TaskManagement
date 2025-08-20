@@ -43,6 +43,9 @@
 }
 
 footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
     background: #2c3e50;
     color: #bdc3c7;
     padding: 15px 0;

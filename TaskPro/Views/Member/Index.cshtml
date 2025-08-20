@@ -1,9 +1,9 @@
 ﻿@model MemberTasksViewModel
 @{
-    Layout = "_LayoutMember"; 
+    Layout = "_LayoutMember";
     var todayDeadlineTasks = Model.UpcomingTasks
         .Concat(Model.InProgressTasks)
-        .Where(t => t.Task.Deadline.Date == DateTime.Today.Date)
+        .Where(t => t.Task.Deadline.Date <= DateTime.Today.Date)
         .ToList();
 }
 <style>
@@ -15,6 +15,7 @@
         .task-clickable:hover {
             background-color: #f8d7da; /* light red hover */
         }</style>
+
 <link href="/css/StyleSheet2.css" rel="stylesheet">
 <div class="content">
     <div class="container">
@@ -43,6 +44,7 @@
             </div>
         }
         <div class="row">
+
             <form method="get" asp-action="Index" class="filter-form mb-4">
                 <!-- Priority -->
                 <div class="filter-group">
@@ -186,7 +188,7 @@
                     <p class="text-muted m-b-30 font-13">
                         Tasks you are currently working on.
                         Keep these updated so the team can track progress.
-                        Remember to mark milestones and communicate any blockers promptly.
+                        Remember to mark milestones and communicate promptly.
                     </p>
                     <ul class="sortable-list taskList list-unstyled ui-sortable" id="inprogress">
                         <!-- In Progress -->

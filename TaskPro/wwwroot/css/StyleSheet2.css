@@ -2,7 +2,6 @@
 p, .card-box, .filter-label, .taskList a {
     font-size: 0.8rem; /* Bootstrap default ~1rem, now 90% */
 }
-
 .filter-form {
     display: flex;
     flex-wrap: wrap;
@@ -12,14 +11,18 @@ p, .card-box, .filter-label, .taskList a {
     background: #f8f9fa;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    width: 100%; /* take full width */
 }
 
+/* Let filters expand evenly */
 .filter-group {
+    flex: 1; /* grow equally */
     display: flex;
     flex-direction: column;
+    min-width: 180px; /* still keep a reasonable minimum */
 }
 
-/* For inline label + dropdown (Priority, Status) */
+/* Inline filters (priority, status) */
 .filter-inline {
     flex-direction: row;
     align-items: center;
@@ -27,8 +30,9 @@ p, .card-box, .filter-label, .taskList a {
 }
 
 .filter-label {
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.8rem;
+    color: #2c3e50; /* matches navbar dark shade */
     margin-bottom: 0.25rem;
     white-space: nowrap;
 }
@@ -39,7 +43,19 @@ p, .card-box, .filter-label, .taskList a {
 
 select, input {
     min-width: 160px;
+    border-radius: 6px;
+    border: 1px solid #bdc3c7;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
 }
+
+    select:focus, input:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 4px rgba(52, 152, 219, 0.5);
+        outline: none;
+    }
+
 
 .thumb-sm {
     height: 36px;
@@ -82,4 +98,13 @@ taskList {
 .text-muted {
     color: #98a6ad !important;
 }
+
+.task-clickable {
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+    .task-clickable:hover {
+        background-color: #f8d7da; /* light red hover */
+    }
 

@@ -74,3 +74,10 @@ footer {
 .modal.right.fade.show .modal-dialog {
     transform: translate3d(0, 0, 0);
 }
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}

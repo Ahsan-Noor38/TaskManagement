@@ -6,44 +6,60 @@
         .Where(t => t.Task.Deadline.Date <= DateTime.Today.Date)
         .ToList();
 }
-<style>
-    .task-clickable {
-        cursor: pointer;
-        transition: background-color 0.2s ease-in-out;
-    }
-
-        .task-clickable:hover {
-            background-color: #f8d7da; /* light red hover */
-        }</style>
-
 <link href="/css/StyleSheet2.css" rel="stylesheet">
-<div class="content">
-    <div class="container">
-        @if (todayDeadlineTasks.Any())
-        {
-            <div class="alert alert-danger shadow-sm border-0 rounded-3 p-3 mb-4">
-                <div class="d-flex align-items-center mb-2">
-                    <i class="fas fa-clock fa-lg me-2"></i>
-                    <h5 class="mb-0 fw-bold">Over Due Tasks</h5>
+<div class="content mb-5">
+    <div class="container-fluid">
+        <div id="featureCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+            <div class="carousel-inner">
+
+                <!-- Slide 1 -->
+                <div class="carousel-item active">
+                    <div class="d-flex align-items-center justify-content-center p-5 rounded shadow-sm"
+                         style="background: linear-gradient(135deg, #e0f7fa, #ffffff); height: 320px; color: #333;">
+                        <div class="text-center">
+                            <i class="fas fa-tasks fa-3x mb-3" style="color:#26c6da;"></i>
+                            <h2 class="fw-bold">Manage Your Tasks</h2>
+                            <p class="lead">Stay on top of overdue, upcoming, and completed tasks effortlessly.</p>
+                        </div>
+                    </div>
                 </div>
-                <ul class="list-unstyled mb-0 mt-2">
-                    @foreach (var task in todayDeadlineTasks)
-                    {
-                        <li onclick="location.href='@Url.Action("TaskDetail", "Member", new { id = task.Id })'"
-                            class="mb-2 d-flex justify-content-between align-items-center bg-white rounded p-2 shadow-sm task-clickable">
-                            <span>
-                                <i class="fas fa-tasks text-danger me-2"></i>
-                                <strong>@task.Task.Title</strong>
-                            </span>
-                            <span class="badge bg-danger-subtle text-danger border">
-                                @task.Task.Deadline.ToString("hh:mm tt")
-                            </span>
-                        </li>
-                    }
-                </ul>
+
+                <!-- Slide 2 -->
+                <div class="carousel-item">
+                    <div class="d-flex align-items-center justify-content-center p-5 rounded shadow-sm"
+                         style="background: linear-gradient(135deg, #fff3e0, #ffffff); height: 320px; color: #333;">
+                        <div class="text-center">
+                            <i class="fas fa-user-check fa-3x mb-3" style="color:#2c3e50;"></i>
+                            <h2 class="fw-bold">Stay Connected</h2>
+                            <p class="lead">Easily view task details and update your status in real time.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="carousel-item">
+                    <div class="d-flex align-items-center justify-content-center p-5 rounded shadow-sm"
+                         style="background: linear-gradient(135deg, #e8f5e9, #ffffff); height: 320px; color: #333;">
+                        <div class="text-center">
+                            <i class="fas fa-filter fa-3x mb-3" style="color:#26c6da;"></i>
+                            <h2 class="fw-bold">Smart Filters</h2>
+                            <p class="lead">Quickly locate tasks with easy filters and search.</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-        }
-        <div class="row">
+
+            <!-- Minimalistic Controls -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#featureCarousel" data-bs-slide="prev"
+                    style="border:none; background:none; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));">
+                <span class="carousel-control-prev-icon" style="background-color:#000; border-radius:50%; opacity:0.6;"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#featureCarousel" data-bs-slide="next"
+                    style="border:none; background:none; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));">
+                <span class="carousel-control-next-icon" style="background-color:#000; border-radius:50%; opacity:0.6;"></span>
+            </button>
+        </div>
 
             <form method="get" asp-action="Index" class="filter-form mb-4">
                 <!-- Priority -->
@@ -114,6 +130,32 @@
                     <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">Clear</a>
                 </div>
             </form>
+            @if (todayDeadlineTasks.Any())
+            {
+                <div class="alert alert-danger shadow-sm border-0 rounded-3 p-3 mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-clock fa-lg me-2"></i>
+                        <h5 class="mb-0 fw-bold"> Over Due Tasks</h5>
+                    </div>
+                    <ul class="list-unstyled mb-0 mt-2">
+                        @foreach (var task in todayDeadlineTasks)
+                        {
+                            <li onclick="location.href='@Url.Action("TaskDetail", "Member", new { id = task.Id })'"
+                                class="mb-2 d-flex justify-content-between align-items-center bg-white rounded p-2 shadow-sm task-clickable">
+                                <span>
+                                    <i class="fas fa-tasks text-danger me-2"></i>
+                                    <strong>@task.Task.Title</strong>
+                                </span>
+                                <span class="badge bg-danger-subtle text-danger border">
+                                    @task.Task.Deadline.ToString("dd MMM yyyy")
+                                    <small>@task.Task.Deadline.ToString("hh:mm tt")</small>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        <div class="row">
             <!-- Upcoming Tasks -->
             <div class="col-lg-4">
                 <div class="card-box">

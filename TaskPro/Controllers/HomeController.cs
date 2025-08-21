@@ -69,7 +69,7 @@ public class HomeController : Controller
 
         // --- Execute queries ---
         var taskUpdates = await taskUpdatesQuery.ToListAsync();
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
 
         // Overdue count
         var taskOverdue = await taskQuery.CountAsync(t =>
@@ -94,10 +94,11 @@ public class HomeController : Controller
 
         //User Per Task Counts
         var createdById = isAdmin ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : User.FindFirst(ClaimTypes.PrimarySid)?.Value;
-        var (labels, counts) = await GetTasksPerUserAsync(createdById);
+        var (labels, counts , userIds) = await GetTasksPerUserAsync(createdById);
 
         ViewBag.TasksPerUserLabels = labels;
         ViewBag.TasksPerUserCounts = counts;
+        ViewBag.TasksPerUserIds = userIds;
 
         // Role counts (global, not filtered)
         var roleCounts = new Dictionary<string, int>
@@ -114,13 +115,13 @@ public class HomeController : Controller
 
         return View();
     }
-    private async Task<(string[] Labels, int[] Counts)> GetTasksPerUserAsync(string userId)
+    private async Task<(string[] Labels, int[] Counts , string[] userIds)> GetTasksPerUserAsync(string userId)
     {
         var members = (await _userManager.GetUsersInRoleAsync(StaticDetails.Roles.Member))
                        .Where(u => u.CreatedBy == userId)
                        .ToList();
 
-        var assignments = await _context.TaskAssignments.Where(ta => members.Select(m => m.Id).Contains(ta.AssignedTo))
+        var assignments = await _context.TaskAssignments.Where(ta => members.Select(m => m.Id).Contains(ta.AssignedTo) && ta.TaskUpdates.All(t => t.Status != (int)TaskPro.Models.Enum.TaskStatus.Completed))
             .Include(ta => ta.AssignedToNavigation)
             .ToListAsync();
 
@@ -128,13 +129,15 @@ public class HomeController : Controller
             .Select(u => new
             {
                 UserName = u.FullName ?? u.UserName,  // fallback to username
-                TaskCount = assignments.Count(a => a.AssignedTo == u.Id)
+                TaskCount = assignments.Count(a => a.AssignedTo == u.Id),
+                Id = u.Id
             })
             .ToList();
 
         return (
             tasksPerUser.Select(x => x.UserName).ToArray(),
-            tasksPerUser.Select(x => x.TaskCount).ToArray()
+            tasksPerUser.Select(x => x.TaskCount).ToArray(),
+            tasksPerUser.Select(x => x.Id).ToArray()
         );
     }
 

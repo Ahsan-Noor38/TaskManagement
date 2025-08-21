@@ -18,7 +18,7 @@
             <div class="card bg-warning text-white mb-4">
                 <div class="card-body">Pending Tasks: <strong>@ViewBag.PendingCount</strong></div>
                 <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" href="/Tasks">View Details</a>
+                    <a class="small text-white stretched-link" href="/Tasks?statusFilter=Pending">View Details</a>
                     <div class="small text-white"><i class="fas fa-tasks"></i></div>
                 </div>
             </div>
@@ -27,7 +27,7 @@
             <div class="card bg-info text-white mb-4">
                 <div class="card-body">In Progress: <strong>@ViewBag.InProgressCount</strong></div>
                 <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" href="/Tasks">View Details</a>
+                    <a class="small text-white stretched-link" href="/Tasks?statusFilter=InProgress">View Details</a>
                     <div class="small text-white"><i class="fas fa-spinner"></i></div>
                 </div>
             </div>
@@ -36,7 +36,7 @@
             <div class="card bg-success text-white mb-4">
                 <div class="card-body">Completed: <strong>@ViewBag.CompletedCount</strong></div>
                 <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" href="/Tasks">View Details</a>
+                    <a class="small text-white stretched-link" href="/Tasks?statusFilter=Completed">View Details</a>
                     <div class="small text-white"><i class="fas fa-check-circle"></i></div>
                 </div>
             </div>
@@ -45,7 +45,7 @@
             <div class="card bg-danger text-white mb-4">
                 <div class="card-body">Overdue: <strong>@ViewBag.OverdueCount</strong></div>
                 <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" href="/Tasks">View Details</a>
+                    <a class="small text-white stretched-link" href="/Tasks?statusFilter=&isOverdue=true">View Details</a>
                     <div class="small text-white"><i class="fas fa-exclamation-triangle"></i></div>
                 </div>
             </div>
@@ -141,16 +141,17 @@
         }
     });
     //workload chart
-    var ctx = document.getElementById('tasksPerUserChart').getContext('2d');
+     var ctx = document.getElementById('tasksPerUserChart').getContext('2d');
+
     var chart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.TasksPerUserLabels)),
+            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.TasksPerUserLabels)),  // usernames
             datasets: [{
                 label: 'Number of Tasks',
                 data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.TasksPerUserCounts)),
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',   // light green-teal
-                borderColor: 'rgba(75, 192, 192, 1)',         // solid green-teal
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1
             }]
         },
@@ -165,4 +166,19 @@
             }
         }
     });
+
+    // 👇 UserIds array (aligned with labels index)
+    var userIds = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.TasksPerUserIds));
+
+    // On click, redirect using userId
+    document.getElementById('tasksPerUserChart').onclick = function (evt) {
+        var activePoint = chart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+
+        if (activePoint.length > 0) {
+            var index = activePoint[0].index;
+            var userId = userIds[index];
+
+            window.location.href = '/TaskAssignment/UserTask?userId=' + encodeURIComponent(userId);
+        }
+    };
 </script>

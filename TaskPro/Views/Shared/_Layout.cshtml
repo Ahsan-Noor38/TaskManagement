@@ -54,7 +54,6 @@
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <li><hr class="dropdown-divider" /></li>
                     <form asp-controller="Home" asp-action="Logout" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="dropdown-item">Logout</button>
@@ -89,6 +88,10 @@
                         <a class="nav-link" href="/Tasks/Index">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Tasks
+                        </a>
+                        <a class="nav-link" href="/TaskAssignment/UserTask">
+                            <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                            User Tasks
                         </a>
                         <div class="sb-sidenav-menu-heading">Reports</div>
 

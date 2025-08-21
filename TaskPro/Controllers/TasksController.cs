@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using TaskPro.Helper;
 using TaskPro.Models;
 using Task = TaskPro.Models.Task;
 
@@ -12,31 +14,84 @@ namespace TaskPro.Controllers
     public class TasksController : Controller
     {
         private readonly TaskProDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public TasksController(TaskProDbContext context)
+        public TasksController(TaskProDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Tasks
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(Models.Enum.TaskStatus? statusFilter , bool? isOverdue)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value; // Assuming Role is stored in claims
 
-            var taskProDbContext = _context.Tasks.Where(t => t.CreatedBy == userId).Include(t => t.CreatedByNavigation);
-            await taskProDbContext.ForEachAsync(r => r.Description = r.Description.Length > 15 ? r.Description.Substring(0, 15) + "..." : r.Description);
+            IQueryable<Task> query = _context.Tasks
+                .Include(t => t.CreatedByNavigation)
+                .Include(t => t.TaskAssignments)
+                .ThenInclude(t => t.TaskUpdates);
 
+            if (userRole == StaticDetails.Roles.Admin)
+            {
+                // get all managers + admin userIds
+                // Admin sees all tasks created by managers or admins
+                var managerIds = (await _userManager.GetUsersInRoleAsync(StaticDetails.Roles.Manager))
+                                    .Where(u => u.CreatedBy == userId)
+                                    .Select(u => u.Id)
+                                    .ToList();
+
+                query = query.Where(t => managerIds.Contains(t.CreatedBy) || t.CreatedBy == userId);
+            }
+            else
+                query = query.Where(t => t.CreatedBy == userId);
+
+            var taskProDbContext = await query.ToListAsync();
+            taskProDbContext.ForEach(r =>
+                r.Description = r.Description.Length > 15
+                    ? r.Description.Substring(0, 15) + "..."
+                    : r.Description);
+
+            // Apply status filter if selected
+            if (statusFilter.HasValue)
+            {
+                taskProDbContext = taskProDbContext.Where(task =>
+                {
+                    var statuses = task.TaskAssignments
+                                       .SelectMany(t => t.TaskUpdates)
+                                       .Select(u => u.Status)
+                                       .ToList();
+
+                    Models.Enum.TaskStatus overallStatus;
+                    if (statuses.All(s => s == (int)Models.Enum.TaskStatus.Pending))
+                        overallStatus = Models.Enum.TaskStatus.Pending;
+                    else if (statuses.All(s => s == (int)Models.Enum.TaskStatus.Completed))
+                        overallStatus = Models.Enum.TaskStatus.Completed;
+                    else
+                        overallStatus = Models.Enum.TaskStatus.InProgress;
+
+                    return overallStatus == statusFilter.Value;
+                }).ToList();
+            }
+
+            if (isOverdue.HasValue)
+                taskProDbContext = taskProDbContext.Where(t => t.Deadline.Date < DateTime.UtcNow.Date).ToList();
+            
             // Create dictionary of { taskId → isAssigned }
             var taskUsage = await _context.Tasks
-                                            .Select(t => new
-                                            {
-                                                t.Id,
-                                                IsAssigned = _context.TaskAssignments.Any(a => a.TaskId == t.Id)
-                                            })
-                                            .ToDictionaryAsync(t => t.Id, t => t.IsAssigned);
+                .Select(t => new
+                {
+                    t.Id,
+                    IsAssigned = _context.TaskAssignments.Any(a => a.TaskId == t.Id)
+                })
+                .ToDictionaryAsync(t => t.Id, t => t.IsAssigned);
 
             ViewBag.TaskUsage = taskUsage;
-            return View(await taskProDbContext.ToListAsync());
+            ViewBag.StatusFilter = statusFilter; // keep selected status
+            ViewBag.IsOverdue = isOverdue;
+
+            return View(taskProDbContext);
         }
 
         // GET: Tasks/Details/5

@@ -11,7 +11,7 @@ public partial class Task
     public string Title { get; set; } = null!;
     [Required]
     public string Description { get; set; } = null!;
-    [Required
+    [Required]
     public int Priority { get; set; }
     [Required]
     public DateTime Deadline { get; set; }

@@ -115,6 +115,10 @@ namespace TaskPro.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User logged in.");
                     var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+
+                    if(user.IsActivated.HasValue && !user.IsActivated.Value)
+                        return RedirectToPage("./NotActivated");
+
                     await AddUserClaimsAsync(user);
                     var roles = await _userManager.GetRolesAsync(user);
 
@@ -147,7 +151,6 @@ namespace TaskPro.Areas.Identity.Pages.Account
         }
 
         private async System.Threading.Tasks.Task AddUserClaimsAsync(ApplicationUser user)
-
         {
             var claimsToUpdate = new Dictionary<string, string?>
                 {

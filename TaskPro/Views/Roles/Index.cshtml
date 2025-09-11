@@ -6,10 +6,10 @@
 }
 
 <div class="container-fluid px-4 mt-5">
-  @*   <p>
+    <p>
         <a asp-action="create" class="btn btn-primary">create new role</a>
     </p>
-    <hr /> *@
+    <hr />
 
     <div class="card mb-4">
         <div class="card-header">
@@ -22,14 +22,20 @@
                     <tr>
                         <th>Role Name</th>
                     </tr>
+                    <tr>
+                        <th>Action</th>
+                    </tr>
                 </thead>
                 <tbody>
                     @foreach (var role in Model)
                     {
                         <tr>
                             <td>@role.Name</td>
-                           
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@role.Id" class="btn btn-primary btn-sm">Edit</a>
+                            </td>
                         </tr>
+                      
                     }
                 </tbody>
             </table>

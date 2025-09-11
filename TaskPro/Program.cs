@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TaskPro.Controllers;
 using TaskPro.Data;
@@ -35,6 +35,10 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 var app = builder.Build();
+
+// Seed default Admin if no Admin exists
+await SeedDefaultAdminUser(app);
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -58,3 +62,45 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.Run();
+
+static async System.Threading.Tasks.Task SeedDefaultAdminUser(WebApplication app)
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        string adminRole = "Admin";
+        string adminEmail = "admin@system.com";
+        string adminPassword = "Admin@123";
+        string adminFullName = "System Administrator";
+        string EmployeeNumber = "Emp-0";
+
+        // 1. Ensure Role exists
+        if (!await roleManager.RoleExistsAsync(adminRole))
+        {
+            await roleManager.CreateAsync(new IdentityRole(adminRole));
+        }
+
+        // 2. Check if ANY admin already exists
+        var admins = await userManager.GetUsersInRoleAsync(adminRole);
+        if (admins == null || admins.Count == 0)
+        {
+            var adminUser = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true,
+                FullName = adminFullName,
+                IsActivated = true,
+                EmployeeNumber = EmployeeNumber
+            };
+
+            var result = await userManager.CreateAsync(adminUser, adminPassword);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(adminUser, adminRole);
+            }
+        }
+    }
+}

@@ -2,6 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,14 +19,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
 using TaskPro.Helper;
 using TaskPro.Models;
 
@@ -105,9 +106,22 @@ namespace TaskPro.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-#nullable enable
+            #nullable enable
 
             public string? Role { get; set; }
+
+            [Required]
+            [Display(Name = "Designation")]
+            public string Designation { get; set; }
+
+            [Required]
+            [Display(Name = "Department")]
+            public string Department { get; set; }
+            public int? EmployeeNumber { get; set; } // auto-generated
+
+            [Display(Name = "Profile Picture")]
+            public IFormFile? Picture { get; set; }
+
         }
 
 
@@ -124,37 +138,79 @@ namespace TaskPro.Areas.Identity.Pages.Account
             {
                 var user = CreateUser();
 
+                // Map custom fields
                 user.FullName = Input.FullName;
+                user.Designation = Input.Designation;
+                user.Department = Input.Department;
+                user.IsActivated = false; // default inactive
+
+                // Auto-increment Employee Number in format: Emp-1, Emp-2, ...
+                var lastUser = await _userManager.Users
+                    .OrderByDescending(u => u.EmployeeNumber)
+                    .FirstOrDefaultAsync();
+
+                // If EmployeeNumber is stored as string (e.g., "Emp-1")
+                int lastNumber = 0;
+
+                if (lastUser != null && !string.IsNullOrEmpty(lastUser.EmployeeNumber))
+                {
+                    var parts = lastUser.EmployeeNumber.Split('-');
+                    if (parts.Length == 2 && int.TryParse(parts[1], out int parsedNum))
+                    {
+                        lastNumber = parsedNum;
+                    }
+                }
+
+                user.EmployeeNumber = $"Emp-{lastNumber + 1}";
+
+                // Save profile picture if uploaded
+                string picturePath = null;
+
+                // Save profile picture if uploaded
+                if (Input.Picture != null)
+                {
+                    var fileName = Guid.NewGuid() + Path.GetExtension(Input.Picture.FileName);
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await Input.Picture.CopyToAsync(stream);
+                    }
+
+                    picturePath = "/uploads/" + fileName;
+                }
+                user.PicturePath = picturePath;
+                // Identity setup
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                var result = await _userManager.CreateAsync(user, Input.Password);
 
+                var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    var userId = await _userManager.GetUserIdAsync(user);
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
-                        pageHandler: null,
-                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                        protocol: Request.Scheme);
+                    //var userId = await _userManager.GetUserIdAsync(user);
+                    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    //code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    //var callbackUrl = Url.Page(
+                    //    "/Account/ConfirmEmail",
+                    //    pageHandler: null,
+                    //    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                    //    protocol: Request.Scheme);
 
-                    _emailSender.SendEmail(Input.Email, "Confirm your email",
-                       $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    //_emailSender.SendEmail(Input.Email, "Confirm your email",
+                    //   $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                     // Role provided by admin from the form
-                    var selectedRole = Input?.Role?.Trim();
-                    var roleToAssign = string.IsNullOrWhiteSpace(selectedRole) ? "Admin" : selectedRole;
+                    //var selectedRole = Input?.Role?.Trim();
+                    //var roleToAssign = string.IsNullOrWhiteSpace(selectedRole) ? "Admin" : selectedRole;
 
-                    if (!await _roleManager.RoleExistsAsync(roleToAssign))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(roleToAssign));
-                    }
+                    //if (!await _roleManager.RoleExistsAsync(roleToAssign))
+                    //{
+                    //    await _roleManager.CreateAsync(new IdentityRole(roleToAssign));
+                    //}
 
-                    await _userManager.AddToRoleAsync(user, roleToAssign);
+                    //await _userManager.AddToRoleAsync(user, roleToAssign);
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
@@ -164,7 +220,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
-                        TempData["SuccessMessage"] = "Registration successful! Please check your email to confirm your account.";
+                        TempData["SuccessMessage"] = "Registration successful! Please wait for admin approval to activate your account.";
                         return RedirectToPage("./Login");
                     }
                 }

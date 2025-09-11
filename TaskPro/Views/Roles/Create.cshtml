@@ -2,13 +2,20 @@
     ViewData["Title"] = "Create Role";
 }
 
-<h2>Create Role</h2>
 
-<form asp-action="Create" method="post">
-    <div class="form-group">
-        <label for="name">Role Name</label>
-        <input type="text" name="name" class="form-control" required />
+<div class="container-fluid px-4 mt-5">
+    <center><h4>Create Role</h4></center>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Create" method="post">
+                <div class="form-group">
+                    <label for="name">Role Name</label>
+                    <input type="text" name="roleName" class="form-control" required />
+                </div><br />
+                <button type="submit" class="btn btn-success">Create</button>
+                <a asp-action="Index" class="btn btn-secondary">Back</a>
+            </form>
+        </div>
     </div>
-    <button type="submit" class="btn btn-success">Create</button>
-    <a asp-action="Index" class="btn btn-secondary">Back</a>
-</form>
+</div>

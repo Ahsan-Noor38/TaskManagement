@@ -1,0 +1,75 @@
+@model IEnumerable<TaskPro.Models.UserViewModel>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="container-fluid px-4 mt-5">
+    <hr />
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Users List
+        </div>
+        <div class="card-body">
+            <table id="datatablesSimple" class="table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Full Name</th>
+                        <th>Status</th>
+                        <th>Approve</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Email</td>
+                            <td>@item.FullName</td>
+                            <td>
+                                @if (item.IsActivated.GetValueOrDefault())
+                                {
+                                    <span class="badge bg-success">Approved</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Pending</span>
+                                }
+                            </td>
+                          
+                            <td>
+                                @if (item.IsActivated.HasValue && !item.IsActivated.Value)
+                                {
+                                    <form asp-action="ApproveUser" method="post" style="display:inline">
+                                        <input type="hidden" name="userId" value="@item.Id" />
+                                        <select name="role" class="form-select form-select-sm d-inline w-auto">
+                                            <option value="Member">Member</option>
+                                            <option value="Manager">Manager</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-success">Active - @item.Role</span>
+                                }
+                            </td>
+                            <td>
+                                <form asp-action="ResendEmail" method="post" style="display:inline">
+                                    <input type="hidden" name="email" value="@item.Email" />
+                                    <button type="submit" class="btn btn-warning btn-sm"
+                                            onclick="return confirm('Resend password setup email to @item.Email?')">
+                                        Resend Email
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

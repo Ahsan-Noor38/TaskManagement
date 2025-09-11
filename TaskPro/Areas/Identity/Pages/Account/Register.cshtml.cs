@@ -120,6 +120,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
             public int? EmployeeNumber { get; set; } // auto-generated
 
             [Display(Name = "Profile Picture")]
+            [Required]
             public IFormFile? Picture { get; set; }
 
         }
@@ -170,16 +171,26 @@ namespace TaskPro.Areas.Identity.Pages.Account
                 if (Input.Picture != null)
                 {
                     var fileName = Guid.NewGuid() + Path.GetExtension(Input.Picture.FileName);
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/", fileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await Input.Picture.CopyToAsync(stream);
                     }
 
-                    picturePath = "/uploads/" + fileName;
+                    picturePath = "/" + fileName;
                 }
+
+                
                 user.PicturePath = picturePath;
+
+                var adminUsers = await _userManager.GetUsersInRoleAsync(StaticDetails.Roles.Admin);
+                var adminUser = adminUsers.FirstOrDefault();
+
+                if (adminUser != null)
+                {
+                    user.CreatedBy = adminUser.Id;
+                }
                 // Identity setup
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);

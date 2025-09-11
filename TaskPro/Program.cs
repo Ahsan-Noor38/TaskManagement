@@ -53,13 +53,12 @@ app.UseRouting();
 app.UseAuthentication();  //Required
 app.UseAuthorization();
 
-app.MapStaticAssets();
+app.UseStaticFiles();
 app.MapRazorPages();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
 

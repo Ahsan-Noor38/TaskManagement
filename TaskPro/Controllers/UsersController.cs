@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -60,6 +60,65 @@ namespace TaskPro.Controllers
             return RedirectToPage("/Account/Login", new { returnUrl = Url.Action("Index", "Home") });
         }
 
+        public async Task<IActionResult> UserIndex()
+        {
+            if (!User.Identity.IsAuthenticated)
+                return RedirectToPage("/Account/Login", new { returnUrl = Url.Action("Index", "Home") });
+            
+            var users = await _userManager.Users.ToListAsync();
+            var userViewModels = new List<UserViewModel>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                if (!roles.Contains("Admin"))
+                {
+
+                    bool hasTasks = await _db.TaskAssignments.AnyAsync(t => t.AssignedTo == user.Id);
+
+                    userViewModels.Add(new UserViewModel
+                    {
+                        Id = user.Id,
+                        Email = user.Email,
+                        FullName = user.FullName,
+                        Role = roles.FirstOrDefault() ?? "No Role", // default if no role assigned
+                        HasTasks = hasTasks,
+                        IsActivated = user.IsActivated
+                    });
+                }
+            }
+
+            return View(userViewModels);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveUser(string userId, string role)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Activate user
+            user.IsActivated = true;
+            await _userManager.UpdateAsync(user);
+
+            // Ensure role exists
+            if (!await _roleManager.RoleExistsAsync(role))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(role));
+            }
+
+            // Assign role
+            await _userManager.AddToRoleAsync(user, role);
+
+            // Optionally send confirmation email
+            await SendApproveAccountEmail(user);
+
+            return RedirectToAction(nameof(UserIndex));
+        }
+
         public IActionResult Create()
         {
             var roles = _roleManager.Roles
@@ -80,10 +139,10 @@ namespace TaskPro.Controllers
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user != null)
-                await SendSetPasswordEmail(user);
+                await SendApproveAccountEmail(user);
 
             TempData["Message"] = "Email resent successfully!";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(UserIndex));
         }
 
         [HttpPost]
@@ -112,7 +171,7 @@ namespace TaskPro.Controllers
                             await _roleManager.CreateAsync(new IdentityRole(model.Role));
                         }
                         await _userManager.AddToRoleAsync(user, model.Role);
-                        await SendSetPasswordEmail(user);
+                        await SendApproveAccountEmail(user);
 
                         return RedirectToAction(nameof(Index));
                     }
@@ -137,21 +196,19 @@ namespace TaskPro.Controllers
             return View(model);
         }
 
-        private async System.Threading.Tasks.Task SendSetPasswordEmail(ApplicationUser user)
+        private async System.Threading.Tasks.Task SendApproveAccountEmail(ApplicationUser user)
         {
-            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-
+            // Direct them to login after approval
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             var callbackUrl = Url.Page(
-                "/Account/ResetPassword",
+                "/Account/ConfirmEmail",
                 pageHandler: null,
-                values: new { area = "Identity", code },
+                values: new { area = "Identity", userId = user.Id, code = code },
                 protocol: Request.Scheme);
 
-            var emailResult = _emailSender.SendEmail(
-                                        user.Email,
-                                        "Set New Password",
-                                        $"Please set your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+            _emailSender.SendEmail(user.Email, "Account Approved",
+               $"Your account has been approved. You can confirm your email by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
         }
 
         public async Task<IActionResult> Edit(string id)
@@ -211,7 +268,7 @@ namespace TaskPro.Controllers
                 if (result.Succeeded)
                 {
                     if (user.Email != model.Email)
-                        await SendSetPasswordEmail(user);
+                        await SendApproveAccountEmail(user);
 
                     return RedirectToAction(nameof(Index));
                 }

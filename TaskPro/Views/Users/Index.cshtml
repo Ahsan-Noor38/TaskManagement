@@ -47,14 +47,6 @@
                                         </button>
                                     </form>
                                 }
-
-                                <form asp-action="ResendEmail" method="post" style="display:inline">
-                                    <input type="hidden" name="email" value="@item.Email" />
-                                    <button type="submit" class="btn btn-warning btn-sm"
-                                            onclick="return confirm('Resend password setup email to @item.Email?')">
-                                        Resend Email
-                                    </button>
-                                </form>
                             </td>
                         </tr>
                     }

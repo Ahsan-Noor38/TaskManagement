@@ -88,6 +88,16 @@ namespace TaskPro.Controllers
                 }
             }
 
+            var availableRoles = _roleManager.Roles
+                                  .Where(r => r.Name != "Admin") // exclude Admin
+                                  .Select(r => new SelectListItem
+                                  {
+                                      Value = r.Name,
+                                      Text = r.Name
+                                  })
+                                  .ToList();
+
+            ViewBag.Roles = availableRoles;
             return View(userViewModels);
         }
 
@@ -138,10 +148,15 @@ namespace TaskPro.Controllers
         public async Task<IActionResult> ResendEmail(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user != null)
+            if (user != null && user.IsActivated.HasValue && user.IsActivated.Value)
+            {
                 await SendApproveAccountEmail(user);
 
-            TempData["Message"] = "Email resent successfully!";
+                TempData["Message"] = "Email resent successfully!";
+            }
+            else
+                TempData["Message"] = "Account not approved yet!";
+
             return RedirectToAction(nameof(UserIndex));
         }
 

@@ -45,9 +45,7 @@
                                 {
                                     <form asp-action="ApproveUser" method="post" style="display:inline">
                                         <input type="hidden" name="userId" value="@item.Id" />
-                                        <select name="role" class="form-select form-select-sm d-inline w-auto">
-                                            <option value="Member">Member</option>
-                                            <option value="Manager">Manager</option>
+                                        <select name="role" class="form-select form-select-sm d-inline w-auto" asp-items="ViewBag.Roles" required>
                                         </select>
                                         <button type="submit" class="btn btn-success btn-sm">Approve</button>
                                     </form>

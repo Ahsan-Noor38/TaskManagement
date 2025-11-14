@@ -64,7 +64,7 @@ namespace TaskPro.Controllers
         {
             if (!User.Identity.IsAuthenticated)
                 return RedirectToPage("/Account/Login", new { returnUrl = Url.Action("Index", "Home") });
-            
+
             var users = await _userManager.Users.ToListAsync();
             var userViewModels = new List<UserViewModel>();
 
@@ -226,7 +226,7 @@ namespace TaskPro.Controllers
                 Email = user.Email,
                 Role = roles.FirstOrDefault(),
                 FullName = user.FullName
-            }; 
+            };
             var rolesViewBag = _roleManager.Roles
                                    .Where(r => r.Name != "Admin") // exclude Admin
                                    .Select(r => new SelectListItem

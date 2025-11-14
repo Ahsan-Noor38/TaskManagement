@@ -1,0 +1,360 @@
+﻿@model MemberTasksViewModel
+@{
+    Layout = "_LayoutMember";
+    var todayDeadlineTasks = Model.UpcomingTasks
+        .Concat(Model.InProgressTasks)
+        .Where(t => t.Task.Deadline.Date <= DateTime.Today.Date)
+        .ToList();
+}
+<link href="/css/StyleSheet2.css" rel="stylesheet">
+<div class="content mb-5">
+    <div class="container-fluid">
+        <div id="featureCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+            <div class="carousel-inner">
+
+                <!-- Slide 1 -->
+                <div class="carousel-item active">
+                    <div class="d-flex align-items-center justify-content-center p-5 rounded shadow-sm"
+                         style="background: linear-gradient(135deg, #e0f7fa, #ffffff); height: 320px; color: #333;">
+                        <div class="text-center">
+                            <i class="fas fa-tasks fa-3x mb-3" style="color:#26c6da;"></i>
+                            <h2 class="fw-bold">Manage Your Tasks</h2>
+                            <p class="lead">Stay on top of overdue, upcoming, and completed tasks effortlessly.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="carousel-item">
+                    <div class="d-flex align-items-center justify-content-center p-5 rounded shadow-sm"
+                         style="background: linear-gradient(135deg, #fff3e0, #ffffff); height: 320px; color: #333;">
+                        <div class="text-center">
+                            <i class="fas fa-user-check fa-3x mb-3" style="color:#2c3e50;"></i>
+                            <h2 class="fw-bold">Stay Connected</h2>
+                            <p class="lead">Easily view task details and update your status in real time.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="carousel-item">
+                    <div class="d-flex align-items-center justify-content-center p-5 rounded shadow-sm"
+                         style="background: linear-gradient(135deg, #e8f5e9, #ffffff); height: 320px; color: #333;">
+                        <div class="text-center">
+                            <i class="fas fa-filter fa-3x mb-3" style="color:#26c6da;"></i>
+                            <h2 class="fw-bold">Smart Filters</h2>
+                            <p class="lead">Quickly locate tasks with easy filters and search.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Minimalistic Controls -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#featureCarousel" data-bs-slide="prev"
+                    style="border:none; background:none; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));">
+                <span class="carousel-control-prev-icon" style="background-color:#000; border-radius:50%; opacity:0.6;"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#featureCarousel" data-bs-slide="next"
+                    style="border:none; background:none; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));">
+                <span class="carousel-control-next-icon" style="background-color:#000; border-radius:50%; opacity:0.6;"></span>
+            </button>
+        </div>
+
+            <form method="get" asp-action="Index" class="filter-form mb-4">
+                <!-- Priority -->
+                <div class="filter-group">
+                    <label class="filter-label">Priority</label>
+                    <select name="priority" class="form-control">
+                        <option value="">-- All --</option>
+                        @foreach (var p in System.Enum.GetValues(typeof(TaskPro.Models.Enum.TaskPriority)))
+                        {
+                            var t = @ViewContext.HttpContext.Request.Query["priority"] == p.ToString();
+                            if (t)
+                            {
+                                <option value="@p" selected>@p</option>
+                            }
+                            else
+                            {
+                                <option value="@p">@p</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Status -->
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">-- All --</option>
+                        @foreach (var s in System.Enum.GetValues(typeof(TaskPro.Models.Enum.TaskStatus)))
+                        {
+                            var t = @ViewContext.HttpContext.Request.Query["status"] == s.ToString();
+                            if (t)
+                            {
+                                <option value="@s" selected>@s</option>
+                            }
+                            else
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Search -->
+                <div class="filter-group">
+                    <label class="filter-label">Search</label>
+                    <input type="text" name="search" class="form-control"
+                           value="@ViewContext.HttpContext.Request.Query["search"]"
+                           placeholder="Search task title..." />
+                </div>
+
+                <!-- From Date -->
+                <div class="filter-group">
+                    <label class="filter-label">From Deadline</label>
+                    <input type="date" name="fromDate" class="form-control"
+                           value="@ViewContext.HttpContext.Request.Query["fromDate"]" />
+                </div>
+
+                <!-- To Date -->
+                <div class="filter-group">
+                    <label class="filter-label">To Deadline</label>
+                    <input type="date" name="toDate" class="form-control"
+                           value="@ViewContext.HttpContext.Request.Query["toDate"]" />
+                </div>
+
+                <!-- Buttons -->
+                <div>
+                    <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">Clear</a>
+                </div>
+            </form>
+            @if (todayDeadlineTasks.Any())
+            {
+                <div class="alert alert-danger shadow-sm border-0 rounded-3 p-3 mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-clock fa-lg me-2"></i>
+                        <h5 class="mb-0 fw-bold"> Over Due Tasks</h5>
+                    </div>
+                    <ul class="list-unstyled mb-0 mt-2">
+                        @foreach (var task in todayDeadlineTasks)
+                        {
+                            <li onclick="location.href='@Url.Action("TaskDetail", "Member", new { id = task.Id })'"
+                                class="mb-2 d-flex justify-content-between align-items-center bg-white rounded p-2 shadow-sm task-clickable">
+                                <span>
+                                    <i class="fas fa-tasks text-danger me-2"></i>
+                                    <strong>@task.Task.Title</strong>
+                                </span>
+                                <span class="badge bg-danger-subtle text-danger border">
+                                    @task.Task.Deadline.ToString("dd MMM yyyy")
+                                    <small>@task.Task.Deadline.ToString("hh:mm tt")</small>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        <div class="row">
+            <!-- Upcoming Tasks -->
+            <div class="col-lg-4">
+                <div class="card-box">
+                    <h4 class="text-dark header-title">ToDo</h4>
+                    <p class="text-muted m-b-30 font-13">
+                        This is your to-do list for your tasks that will begin soon.
+                        Use this space to prepare in advance and ensure you have everything you need and required.
+
+                    </p>
+                    <ul class="sortable-list taskList list-unstyled ui-sortable" id="upcoming">
+                        <!-- To Do -->
+                        @if (!Model.UpcomingTasks.Any())
+                        {
+                            <div class="alert alert-secondary text-center shadow-sm" role="alert" style="font-size: 1.1rem;">
+                                <i class="fas fa-tasks fa-lg me-2"></i>
+                                No tasks to do — enjoy the break! 🎉
+                            </div>
+                        }
+                        @foreach (var item in Model.UpcomingTasks)
+                        {
+                            <li class="task-warning ui-sortable-handle" id="task1">
+                                <div class="checkbox checkbox-custom checkbox-single float-right">
+                                    <div class="float-right">
+                                        @if (item.Task.Priority == (int)TaskPro.Models.Enum.TaskPriority.High)
+                                        {
+                                            <span class="badge badge-danger">High</span>
+                                        }
+                                        else if (item.Task.Priority == (int)TaskPro.Models.Enum.TaskPriority.Medium)
+                                        {
+                                            <span class="badge badge-warning text-dark">Medium</span>
+                                        }
+                                        else if (item.Task.Priority == (int)TaskPro.Models.Enum.TaskPriority.Low)
+                                        {
+                                            <span class="badge badge-success">Low</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary">N/A</span>
+                                        }
+                                    </div>
+                                    <label></label>
+                                </div>
+                                @item.Task.Title
+                                <div class="clearfix"></div>
+                                <div class="mt-3">
+                                    <p class="float-right mb-0 mt-2">
+                                        <a href="@Url.Action("TaskDetail", "Member", new { id = item.Id })"
+                                           class="btn btn-success btn-sm waves-effect waves-light">
+                                            View Details
+                                        </a>
+                                    </p>
+                                    <p class="mb-0 text-muted d-flex align-items-center">
+                                        <img src="~/Admin/default-avatar.png" alt="task-user" class="thumb-sm rounded-circle mr-2">
+                                        <span>
+                                            <span class="font-bold font-secondary">@item.Task.CreatedByNavigation.FullName</span><br />
+                                            <small class="text-secondary text-muted">Created by</small>
+                                        </span>
+                                    </p>
+                                </div>
+                            </li>
+                        }
+
+                    </ul>
+
+                </div>
+            </div>
+
+            <!-- In Progress Tasks -->
+            <div class="col-lg-4">
+                <div class="card-box">
+                    <h4 class="text-dark header-title">In Progress</h4>
+                    <p class="text-muted m-b-30 font-13">
+                        Tasks you are currently working on.
+                        Keep these updated so the team can track progress.
+                        Remember to mark milestones and communicate promptly.
+                    </p>
+                    <ul class="sortable-list taskList list-unstyled ui-sortable" id="inprogress">
+                        <!-- In Progress -->
+                        @if (!Model.InProgressTasks.Any())
+                        {
+                            <div class="alert alert-warning text-center shadow-sm" role="alert" style="font-size: 1.1rem;">
+                                <i class="fas fa-spinner fa-spin fa-lg me-2"></i>
+                                No tasks in progress — time to start one! ⏳
+                            </div>
+                        }
+                        @foreach (var item in Model.InProgressTasks)
+                        {
+                            <li id="task9" class="ui-sortable-handle">
+                                <div class="checkbox checkbox-custom checkbox-single float-right">
+                                    <div class="float-right">
+                                        @if (item.Task.Priority == (int)TaskPro.Models.Enum.TaskPriority.High)
+                                        {
+                                            <span class="badge badge-danger">High</span>
+                                        }
+                                        else if (item.Task.Priority == (int)TaskPro.Models.Enum.TaskPriority.Medium)
+                                        {
+                                            <span class="badge badge-warning text-dark">Medium</span>
+                                        }
+                                        else if (item.Task.Priority == (int)TaskPro.Models.Enum.TaskPriority.Low)
+                                        {
+                                            <span class="badge badge-success">Low</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary">N/A</span>
+                                        }
+                                    </div>
+                                    <label></label>
+                                </div>
+                                @item.Task.Title
+                                <div class="clearfix"></div>
+                                <div class="mt-3">
+                                    <p class="float-right mb-0 mt-2">
+                                        <a href="@Url.Action("TaskDetail", "Member", new { id = item.Id })"
+                                           class="btn btn-success btn-sm waves-effect waves-light">
+                                            View Details
+                                        </a>
+                                    </p>
+                                    <p class="mb-0 text-muted d-flex align-items-center">
+                                        <img src="~/Admin/default-avatar.png" alt="task-user" class="thumb-sm rounded-circle mr-2">
+                                        <span>
+                                            <span class="font-bold font-secondary">@item.Task.CreatedByNavigation.FullName</span><br />
+                                            <small class="text-secondary text-muted">Created by</small>
+                                        </span>
+                                    </p>
+                                </div>
+                            </li>
+                        }
+
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Completed Tasks -->
+            <div class="col-lg-4">
+                <div class="card-box">
+                    <h4 class="text-dark header-title">Completed</h4>
+                    <p class="text-muted m-b-30 font-13">
+                        Tasks that have been finished.
+                        Keep this list as a record of accomplishments.
+                        Reviewing completed work helps improve future project efficiency.
+                    </p>
+                    <ul class="sortable-list taskList list-unstyled ui-sortable" id="completed">
+                        @if (!Model.CompletedTasks.Any())
+                        {
+                            <div class="alert alert-info text-center shadow-sm" role="alert" style="font-size: 1.1rem;">
+                                <i class="fas fa-check-circle fa-lg me-2"></i>
+                                No tasks completed yet — keep going! 🚀
+                            </div>
+                        }
+                        @foreach (var item in Model.CompletedTasks)
+                        {
+                            <li class="task-warning ui-sortable-handle" id="task14">
+                                <div class="checkbox checkbox-custom checkbox-single float-right">
+                                    <div class="float-right">
+                                        @if (item.Task.Priority == (int)TaskPro.Models.Enum.TaskPriority.High)
+                                        {
+                                            <span class="badge badge-danger">High</span>
+                                        }
+                                        else if (item.Task.Priority == (int)TaskPro.Models.Enum.TaskPriority.Medium)
+                                        {
+                                            <span class="badge badge-warning text-dark">Medium</span>
+                                        }
+                                        else if (item.Task.Priority == (int)TaskPro.Models.Enum.TaskPriority.Low)
+                                        {
+                                            <span class="badge badge-success">Low</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary">N/A</span>
+                                        }
+                                    </div>
+                                    <label></label>
+                                </div>
+                                @item.Task.Title
+                                <div class="clearfix"></div>
+                                <div class="mt-3">
+                                    <p class="float-right mb-0 mt-2">
+                                        <a href="@Url.Action("TaskDetail", "Member", new { id = item.Id })"
+                                           class="btn btn-success btn-sm waves-effect waves-light">
+                                            View Details
+                                        </a>
+                                    </p>
+                                    <p class="mb-0 text-muted d-flex align-items-center">
+                                        <img src="~/Admin/default-avatar.png" alt="task-user" class="thumb-sm rounded-circle mr-2">
+                                        <span>
+                                            <span class="font-bold font-secondary">@item.Task.CreatedByNavigation.FullName</span><br />
+                                            <small class="text-secondary text-muted">Created by</small>
+                                        </span>
+                                    </p>
+                                </div>
+                            </li>
+                        }
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- end row -->
+    </div>
+    <!-- container -->
+</div>

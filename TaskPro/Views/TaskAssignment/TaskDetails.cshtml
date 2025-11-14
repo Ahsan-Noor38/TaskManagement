@@ -1,0 +1,183 @@
+﻿@model TaskDetailViewModel
+
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" />
+<link href="~/Admin/css/TaskDetailCss.css" rel="stylesheet" />
+<div class="content">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-10">
+                <div class="card-box task-detail">
+                    <div class="media mt-0 mb-3 d-flex justify-content-between align-items-center">
+                        <!-- Left side (icon + title + priority) -->
+                        <div class="d-flex align-items-center">
+                            <div class="mr-3 rounded-circle bg-info text-white text-center align-items-center justify-content-center"
+                                 style="width:48px;height:48px;font-size:24px;">
+                                📝
+                            </div>
+                            <div>
+                                <h5 class="mt-0 mb-1">@Model.Task.Title</h5>
+                                <span class="badge badge-@(Model.Priority)">@(Model.Priority)</span>
+                            </div>
+                        </div>
+
+                        <!-- Right side (Overall Status) -->
+                        <div>
+                            @{
+                                var allStatuses = Model.Task.TaskAssignments
+                                .SelectMany(t => t.TaskUpdates)
+                                .Select(u => u.Status)
+                                .ToList();
+
+                                string overallStatus;
+                                string statusClass;
+
+                                if (allStatuses.All(s => s == (int)TaskPro.Models.Enum.TaskStatus.Pending))
+                                {
+                                    overallStatus = "Pending";
+                                    statusClass = "High";
+                                }
+                                else if (allStatuses.All(s => s == (int)TaskPro.Models.Enum.TaskStatus.Completed))
+                                {
+                                    overallStatus = "Completed";
+                                    statusClass = "Medium";
+                                }
+                                else
+                                {
+                                    overallStatus = "In Progress";
+                                    statusClass = "Low";
+                                }
+                            }
+
+                            <p class="mb-1 font-weight-bold"><b>Task Status</b></p>
+                            <span class="badge badge-@statusClass">@overallStatus</span>
+                        </div>
+                    </div>
+
+
+                    <p class="text-muted">@Model.Task.Description</p>
+
+                    <hr />
+                    <ul class="list-inline task-dates m-b-0 mt-5">
+                        <li>
+                            <h5 class="m-b-5">Start Date</h5>
+                            <p>@Model.Task.CreatedAt.ToString("D") <small class="text-muted">@Model.Task.CreatedAt.ToString("t")</small></p>
+                        </li>
+                        <li>
+                            <h5 class="m-b-5">Deadline</h5>
+                            <p>@Model.Task.Deadline.ToString("D") <small class="text-muted">@Model.Task.Deadline.ToString("t")</small></p>
+                        </li>
+                    </ul>
+
+
+                    <div class="attached-files mt-4">
+                        <div class="files-list">
+                            <br /><br /><br /> <h5 class="">Assigned To</h5>
+                            @if (Model.AssignedUsers.Any())
+                            {
+                                foreach (var a in Model.AssignedUsers)
+                                {
+                                    <div class="file-box text-center">
+                                        <form asp-action="UnassignTask"
+                                              asp-controller="TaskAssignment"
+                                              asp-route-taskId="@Model.Task.Id"
+                                              asp-route-userId="@a.AssignedToNavigation.Id"
+                                              method="post"
+                                              onsubmit="return confirm('Are you sure you want to unassign this task?');">
+
+                                            <button type="submit" class="initial-circle border-0"
+                                                    style="background-color:@GetRandomColor(); cursor:pointer;"
+                                                    title="Click to unassign">
+                                                @a.AssignedToNavigation?.FullName?.Substring(0, 1).ToUpper()
+                                            </button>
+                                        </form>
+
+                                        <p class="font-13 mb-1 text-muted">
+                                            <small>@a.AssignedToNavigation?.FullName</small>
+                                            @{
+                                                var userStatuses = a.TaskUpdates.Select(u => u.Status).ToList();
+                                                string userStatusText;
+                                                string badgecolor;
+
+                                                if (userStatuses.All(s => s == (int)TaskPro.Models.Enum.TaskStatus.Pending))
+                                                {
+                                                    userStatusText = "Pending";
+                                                    badgecolor = "High";
+                                                }
+                                                else if (userStatuses.All(s => s == (int)TaskPro.Models.Enum.TaskStatus.Completed))
+                                                {
+                                                    userStatusText = "Completed";
+                                                    badgecolor = "Medium";
+                                                }
+                                                else
+                                                {
+                                                    userStatusText = "In Progress";
+                                                    badgecolor = "Low";
+                                                }
+                                            }
+                                            <br />
+                                            <span class="task-detail badge badge-@badgecolor">@userStatusText</span>
+                                        </p>
+                                    </div>
+                                }
+                            }
+                            <div class="file-box ml-3">
+                                <a href="#">
+                                    <span class="add-new-plus" data-bs-toggle="modal" data-bs-target="#assignModal">
+                                        <i class="fa fa-plus"></i>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignModalLabel">Assign This Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="AssignUser" method="post">
+                    <input type="hidden" name="taskId" value="@Model.Task.Id" />
+
+                    <div class="mb-3">
+                        <label for="selectedUserId" class="form-label">Select User</label>
+                        <select name="selectedUserId" asp-items="Model.AvailableUsers" class="form-control">
+                            <option value="">-- Select User --</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Assign</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@functions {
+    private static readonly string[] Colors = new[]
+    {
+    "#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5",
+    "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50",
+    "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107", "#ff9800",
+    "#ff5722", "#795548", "#607d8b"
+    };
+
+    private string GetRandomColor()
+    {
+        var random = new Random(Guid.NewGuid().GetHashCode()); // ensures better randomness
+        return Colors[random.Next(Colors.Length)];
+    }
+}

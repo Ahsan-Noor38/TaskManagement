@@ -1,0 +1,68 @@
+﻿@model IEnumerable<TaskPro.Models.UserTaskViewModel>
+@{
+    ViewData["Title"] = "User Tasks";
+    var users = ViewBag.Users as List<SelectListItem>;
+    var selectedUserId = Context.Request.Query["userId"].ToString();
+}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow rounded-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">📋 User Tasks</h4>
+            <form method="get" asp-action="UserTask" class="d-flex">
+                <select name="userId" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                    <option value="">-- All Users --</option>
+                    @foreach (var user in users)
+                    {
+                        <option value="@user.Value" selected="@(user.Value == selectedUserId)">
+                            @user.Text
+                        </option>
+                    }
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+            </form>
+        </div>
+
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">No tasks found.</div>
+            }
+            else
+            {
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>User</th>
+                            <th>Task</th>
+                            <th>Status</th>
+                            <th>Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var task in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@task.UserName</strong>
+                                    <br />
+                                    <span class="badge bg-secondary">Member</span>
+                                </td>
+                                <td>@task.TaskTitle</td>
+                                <td>
+                                    <span class="badge
+                                                @(task.Status == TaskPro.Models.Enum.TaskStatus.Completed ? "bg-success" :
+                                                                                    task.Status == TaskPro.Models.Enum.TaskStatus.InProgress ? "bg-warning text-dark" :
+                                                                                    "bg-danger")">
+                                @task.Status
+                            </span>
+                        </td>
+                        <td>@task.DueDate.Value.ToString("dd MMM yyyy")</td>
+                    </tr>
+                                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

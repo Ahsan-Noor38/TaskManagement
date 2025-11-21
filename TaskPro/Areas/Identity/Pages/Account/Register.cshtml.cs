@@ -3,22 +3,10 @@
 #nullable disable
 
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
 using TaskPro.Helper;
 using TaskPro.Models;
 
@@ -106,7 +94,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-            #nullable enable
+#nullable enable
 
             public string? Role { get; set; }
 
@@ -117,7 +105,8 @@ namespace TaskPro.Areas.Identity.Pages.Account
             [Required]
             [Display(Name = "Department")]
             public string Department { get; set; }
-            public int? EmployeeNumber { get; set; } // auto-generated
+            [Display(Name = "Employee Number")]
+            public string? EmployeeNumber { get; set; } // auto-generated
 
             [Display(Name = "Profile Picture")]
             [Required]
@@ -146,23 +135,24 @@ namespace TaskPro.Areas.Identity.Pages.Account
                 user.IsActivated = false; // default inactive
 
                 // Auto-increment Employee Number in format: Emp-1, Emp-2, ...
-                var lastUser = await _userManager.Users
-                    .OrderByDescending(u => u.EmployeeNumber)
-                    .FirstOrDefaultAsync();
+                //var lastUser = await _userManager.Users
+                //    .OrderByDescending(u => u.EmployeeNumber)
+                //    .FirstOrDefaultAsync();
 
-                // If EmployeeNumber is stored as string (e.g., "Emp-1")
-                int lastNumber = 0;
+                //// If EmployeeNumber is stored as string (e.g., "Emp-1")
+                //int lastNumber = 0;
 
-                if (lastUser != null && !string.IsNullOrEmpty(lastUser.EmployeeNumber))
-                {
-                    var parts = lastUser.EmployeeNumber.Split('-');
-                    if (parts.Length == 2 && int.TryParse(parts[1], out int parsedNum))
-                    {
-                        lastNumber = parsedNum;
-                    }
-                }
+                //if (lastUser != null && !string.IsNullOrEmpty(lastUser.EmployeeNumber))
+                //{
+                //    var parts = lastUser.EmployeeNumber.Split('-');
+                //    if (parts.Length == 2 && int.TryParse(parts[1], out int parsedNum))
+                //    {
+                //        lastNumber = parsedNum;
+                //    }
+                //}
 
-                user.EmployeeNumber = $"Emp-{lastNumber + 1}";
+                //user.EmployeeNumber = $"Emp-{lastNumber + 1}";
+                user.EmployeeNumber = Input.EmployeeNumber;
 
                 // Save profile picture if uploaded
                 string picturePath = null;
@@ -181,7 +171,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
                     picturePath = "/" + fileName;
                 }
 
-                
+
                 user.PicturePath = picturePath;
 
                 var adminUsers = await _userManager.GetUsersInRoleAsync(StaticDetails.Roles.Admin);

@@ -1,15 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using System.Security.Claims;
-using TaskPro.Helper;
 using TaskPro.Models;
 
 namespace TaskPro.Controllers;
 
-[Authorize]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
@@ -25,7 +21,13 @@ public class HomeController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    [Authorize]
+    public IActionResult Dashboard()
     {
         if (!User.Identity.IsAuthenticated)
         {
@@ -34,7 +36,7 @@ public class HomeController : Controller
 
         return View();
     }
-  
+
     public IActionResult InternalServerError()
     {
         return View();
@@ -53,6 +55,7 @@ public class HomeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
@@ -60,19 +63,21 @@ public class HomeController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetAllNotifications()
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var allNotifications = await _context.Notifications
-                                        .Where(n => n.UserId == userId)
-                                        .OrderByDescending(n => n.CreatedAt)
-                                        .ToListAsync();
-        return Json(allNotifications.Select(n => new
-        {
-            id = n.Id,
-            message = n.Message,
-            isRead = n.IsRead ?? false,
-            createdAt = n.CreatedAt
-        }));
+        //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //var allNotifications = await _context.Notifications
+        //                                .Where(n => n.UserId == userId)
+        //                                .OrderByDescending(n => n.CreatedAt)
+        //                                .ToListAsync();
+        //return Json(allNotifications.Select(n => new
+        //{
+        //    id = n.Id,
+        //    message = n.Message,
+        //    isRead = n.IsRead ?? false,
+        //    createdAt = n.CreatedAt
+        //}));
+        return Json(new List<object>());
     }
 }

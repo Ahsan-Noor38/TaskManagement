@@ -37,7 +37,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 var app = builder.Build();
 
 // Seed default Admin if no Admin exists
-await SeedDefaultAdminUser(app);
+await SeedDefaultAdminUserAndDefaultRoles(app);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -62,7 +62,7 @@ app.MapControllerRoute(
 
 app.Run();
 
-static async System.Threading.Tasks.Task SeedDefaultAdminUser(WebApplication app)
+static async System.Threading.Tasks.Task SeedDefaultAdminUserAndDefaultRoles(WebApplication app)
 {
     using (var scope = app.Services.CreateScope())
     {
@@ -70,18 +70,18 @@ static async System.Threading.Tasks.Task SeedDefaultAdminUser(WebApplication app
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         string adminRole = "Admin";
+        string managerRole = "Manager";
+        string memberRole = "Member";
         string adminEmail = "admin@system.com";
         string adminPassword = "Admin@123";
         string adminFullName = "System Administrator";
         string EmployeeNumber = "Emp-0";
 
-        // 1. Ensure Role exists
         if (!await roleManager.RoleExistsAsync(adminRole))
         {
             await roleManager.CreateAsync(new IdentityRole(adminRole));
         }
 
-        // 2. Check if ANY admin already exists
         var admins = await userManager.GetUsersInRoleAsync(adminRole);
         if (admins == null || admins.Count == 0)
         {
@@ -100,6 +100,15 @@ static async System.Threading.Tasks.Task SeedDefaultAdminUser(WebApplication app
             {
                 await userManager.AddToRoleAsync(adminUser, adminRole);
             }
+        }
+        if (!await roleManager.RoleExistsAsync(managerRole))
+        {
+            await roleManager.CreateAsync(new IdentityRole(managerRole));
+        }
+
+        if (!await roleManager.RoleExistsAsync(memberRole))
+        {
+            await roleManager.CreateAsync(new IdentityRole(memberRole));
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace TaskPro.Models;
 
@@ -29,13 +27,13 @@ public partial class TaskProDbContext : DbContext
 
     public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; }
 
-    public virtual DbSet<Notification> Notifications { get; set; }
+    //public virtual DbSet<Notification> Notifications { get; set; }
 
-    public virtual DbSet<Task> Tasks { get; set; }
+    //public virtual DbSet<Task> Tasks { get; set; }
 
-    public virtual DbSet<TaskAssignment> TaskAssignments { get; set; }
+    //public virtual DbSet<TaskAssignment> TaskAssignments { get; set; }
 
-    public virtual DbSet<TaskUpdate> TaskUpdates { get; set; }
+    //public virtual DbSet<TaskUpdate> TaskUpdates { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnection");

@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TaskPro.Models;
+﻿using TaskPro.Models;
 using Task = System.Threading.Tasks.Task;
 
 namespace TaskPro.Controllers
@@ -29,20 +28,21 @@ namespace TaskPro.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            _db.Notifications.Add(notification);
-            await _db.SaveChangesAsync();
+            //_db.Notifications.Add(notification);
+            //await _db.SaveChangesAsync();
         }
 
         public async Task<List<Notification>> GetUserNotificationsAsync(string userId, bool onlyUnread = true)
         {
-            var query = _db.Notifications
-                .Where(n => n.UserId == userId)
-                .OrderByDescending(n => n.CreatedAt);
+            //var query = _db.Notifications
+            //    .Where(n => n.UserId == userId)
+            //    .OrderByDescending(n => n.CreatedAt);
 
-            if (onlyUnread)
-                query = (IOrderedQueryable<Notification>)query.Where(n => n.IsRead.HasValue && !n.IsRead.Value);
+            //if (onlyUnread)
+            //    query = (IOrderedQueryable<Notification>)query.Where(n => n.IsRead.HasValue && !n.IsRead.Value);
 
-            return await query.ToListAsync();
+            //return await query.ToListAsync();
+            return Enumerable.Empty<Notification>().ToList();
         }
     }
 }

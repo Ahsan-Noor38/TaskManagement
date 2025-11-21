@@ -8,9 +8,17 @@
      }
 </style>
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Dashboard</h1>
+    <h1 class="mt-4">Welcome Home</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active">Dashboard</li>
+        <li class="breadcrumb-item active">Home</li>
     </ol>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <p>Welcome @User.Identity.Name</p>
+    }
+    else
+    {
+        <p>Please Login or Register to go to portal.</p>
+    }
 </div>
 

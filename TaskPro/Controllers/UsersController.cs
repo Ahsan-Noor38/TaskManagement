@@ -40,7 +40,7 @@ namespace TaskPro.Controllers
                 foreach (var user in users)
                 {
                     var roles = await _userManager.GetRolesAsync(user);
-                    bool hasTasks = await _db.TaskAssignments.AnyAsync(t => t.AssignedTo == user.Id);
+                    //bool hasTasks = await _db.TaskAssignments.AnyAsync(t => t.AssignedTo == user.Id);
 
                     if (!roles.Contains("Admin"))
                     {
@@ -50,7 +50,7 @@ namespace TaskPro.Controllers
                             Email = user.Email,
                             FullName = user.FullName,
                             Role = roles.FirstOrDefault(),
-                            HasTasks = hasTasks
+                            //HasTasks = hasTasks
                         });
                     }
                 }
@@ -64,7 +64,7 @@ namespace TaskPro.Controllers
         {
             if (!User.Identity.IsAuthenticated)
                 return RedirectToPage("/Account/Login", new { returnUrl = Url.Action("Index", "Home") });
-            
+
             var users = await _userManager.Users.ToListAsync();
             var userViewModels = new List<UserViewModel>();
 
@@ -74,7 +74,7 @@ namespace TaskPro.Controllers
                 if (!roles.Contains("Admin"))
                 {
 
-                    bool hasTasks = await _db.TaskAssignments.AnyAsync(t => t.AssignedTo == user.Id);
+                    //bool hasTasks = await _db.TaskAssignments.AnyAsync(t => t.AssignedTo == user.Id);
 
                     userViewModels.Add(new UserViewModel
                     {
@@ -82,7 +82,7 @@ namespace TaskPro.Controllers
                         Email = user.Email,
                         FullName = user.FullName,
                         Role = roles.FirstOrDefault() ?? "No Role", // default if no role assigned
-                        HasTasks = hasTasks,
+                        //HasTasks = hasTasks,
                         IsActivated = user.IsActivated
                     });
                 }
@@ -241,7 +241,7 @@ namespace TaskPro.Controllers
                 Email = user.Email,
                 Role = roles.FirstOrDefault(),
                 FullName = user.FullName
-            }; 
+            };
             var rolesViewBag = _roleManager.Roles
                                    .Where(r => r.Name != "Admin") // exclude Admin
                                    .Select(r => new SelectListItem

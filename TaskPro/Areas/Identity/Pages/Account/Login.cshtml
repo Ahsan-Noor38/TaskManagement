@@ -55,10 +55,11 @@
                             </div>
 
                             <button type="submit" class="w-100 btn btn-gradient btn-lg mb-3">Log in</button>
+                            <a  href="/home/index" class="w-100 btn btn-gradient btn-lg mb-3">Back to Home</a>
 
                             <div class="text-center">
-                                <a asp-page="./ForgotPassword" class="d-block mb-2">Forgot your password?</a>
                                 <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="d-block mb-2">Register as a new user</a>
+                                <a asp-page="./ForgotPassword" class="d-block mb-2">Forgot your password?</a>
                                 <a asp-page="./ResendEmailConfirmation" class="d-block">Resend email confirmation</a>
                             </div>
                         </form>

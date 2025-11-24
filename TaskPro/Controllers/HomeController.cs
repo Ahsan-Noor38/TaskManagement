@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using TaskPro.Helper;
 using TaskPro.Models;
 
@@ -15,13 +16,17 @@ public class HomeController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly TaskProDbContext _context;
+    private readonly MailProvider _emailSender;
+    private readonly IConfiguration _config;
 
-    public HomeController(ILogger<HomeController> logger, SignInManager<ApplicationUser> signInManager, TaskProDbContext context, UserManager<ApplicationUser> userManager)
+    public HomeController(ILogger<HomeController> logger, SignInManager<ApplicationUser> signInManager, TaskProDbContext context, UserManager<ApplicationUser> userManager, IConfiguration configuration, IConfiguration config)
     {
         _logger = logger;
         _signInManager = signInManager;
         _context = context;
         _userManager = userManager;
+        _emailSender = new MailProvider(configuration);
+        _config = config;
     }
 
     public IActionResult Index()
@@ -168,7 +173,7 @@ public class HomeController : Controller
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
-        return Redirect("/Identity/Account/Login");
+        return Redirect("/Home/Index");
     }
 
     [HttpGet]
@@ -188,5 +193,37 @@ public class HomeController : Controller
             createdAt = n.CreatedAt
         }));
         //return Json(new List<object>());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Contact(string email, string subject, string name, string message)
+    {
+        // Build email content
+        var emailSubject = $"New Contact Form Submission: {subject}";
+        var emailBody = $@"
+            <h3>New Contact Request</h3>
+            <p><strong>Name:</strong> {HtmlEncoder.Default.Encode(name)}</p>
+            <p><strong>Email:</strong> {HtmlEncoder.Default.Encode(email)}</p>
+            <p><strong>Subject:</strong> {HtmlEncoder.Default.Encode(subject)}</p>
+            <p><strong>Message:</strong><br/>{HtmlEncoder.Default.Encode(message)}</p>
+        ";
+        var supportEmail = _config["SupportEmail"];
+        var supportPassword = _config["SupportPassword"];
+
+        if (supportEmail == null || supportPassword == null)
+        {
+            TempData["Contact"] = "Support email configuration is missing. Please try again later.";
+            return RedirectToAction("Index");
+        }
+
+        // Send email to your support/admin
+        var emailSent = _emailSender.SenttoMail(supportEmail, supportPassword, emailSubject, emailBody);
+        if (emailSent)
+            TempData["Contact"] = "Your message has been sent successfully!";
+        else
+            TempData["Contact"] = "There was an error sending your message. Please try again later.";
+        
+        return RedirectToAction("Index"); 
     }
 }

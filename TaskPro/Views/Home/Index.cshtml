@@ -1,16 +1,150 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    Layout = null;
 }
-<style>
-     .chart-container {
-         position: relative;
-         height: 370px; /* same fixed height for both */
-     }
-</style>
-<div class="container-fluid px-4">
-    <h1 class="mt-4">Welcome Home</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active">Home</li>
-    </ol>
 
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskPro</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link href="/css/IndexStyleSheet.css" rel="stylesheet" />
+
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <a class="navbar-brand" href="#">TaskPro</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon" style="color:#fff;"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                <li class="nav-item"><a class="nav-link" href="#system-highlights">System</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                <li class="nav-item">
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-light btn-login me-2">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-light text-dark btn-login">Register</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Organize Work. Boost Productivity.</h1>
+        <p class="text-muted-light">Simple and powerful task management system for teams and individuals.</p>
+        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-main mt-3">Get Started</a>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="container my-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Why Choose Our Task System?</h2>
+            <p class="text-muted-light">We help you stay organized and work smarter</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">📌</div>
+                    <h5>Task Tracking</h5>
+                    <p>Manage tasks with statuses like Pending, In-Progress, and Completed.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">👥</div>
+                    <h5>Team Collaboration</h5>
+                    <p>Assign tasks to employees, track progress, and monitor productivity.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">📊</div>
+                    <h5>Analytics Dashboard</h5>
+                    <p>Get insights on employee performance, completed tasks, and workload.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Highlights Section -->
+    <section id="system-highlights" class="container my-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">System Highlights</h2>
+            <p class="text-muted-light">Core features of the Task Management System</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="system-card">
+                    <div class="system-icon">📝</div>
+                    <h5>Reports</h5>
+                    <p>Generate detailed task and performance reports for better decision-making.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="system-card">
+                    <div class="system-icon">🔔</div>
+                    <h5>Notifications</h5>
+                    <p>Receive alerts for new tasks, deadlines, and updates in real-time.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="system-card">
+                    <div class="system-icon">👤</div>
+                    <h5>User Roles</h5>
+                    <p>Assign roles and permissions for secure access control.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Form -->
+    <section id="contact" class="container my-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Contact Us</h2>
+            <p class="text-muted-light">Send us a message and we'll get back to you promptly</p>
+        </div>
+        <div class="contact-form">
+            @if (TempData["Contact"] != null)
+            {
+                <div class="alert alert-warning text-center">
+                    @TempData["Contact"]
+                </div>
+            }
+            <h4>Get in Touch</h4>
+            <form asp-controller="Home" asp-action="Contact" method="post">
+                @Html.AntiForgeryToken()
+                <input type="text" class="form-control" name="name" placeholder="Your Name" required />
+                <input type="email" class="form-control" name="email" placeholder="Your Email" required />
+                <input type="text" class="form-control" name="subject" placeholder="Subject" required />
+                <textarea class="form-control" rows="5" name="message" placeholder="Message" required></textarea>
+                <button type="submit" class="btn btn-main mt-3">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-5">
+        <div class="container text-center">
+            <p>&copy; 2025 TaskPro. All rights reserved.</p>
+            <p>
+                <a href="#">Privacy Policy</a> |
+                <a href="#">Terms of Service</a> |
+                <a href="#">Contact</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

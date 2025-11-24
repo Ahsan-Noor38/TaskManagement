@@ -71,6 +71,12 @@ internal class Program
         {
             using (var scope = app.Services.CreateScope())
             {
+                var identityDbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await identityDbContext.Database.EnsureCreatedAsync();
+
+                var taskProDbContext = scope.ServiceProvider.GetRequiredService<TaskProDbContext>();
+                await taskProDbContext.Database.EnsureCreatedAsync();
+
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 

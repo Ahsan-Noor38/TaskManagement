@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using TaskPro.Helper;
@@ -116,7 +115,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
                     _logger.LogInformation("User logged in.");
                     var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
 
-                    if(user.IsActivated.HasValue && !user.IsActivated.Value)
+                    if (user.IsActivated.HasValue && !user.IsActivated.Value)
                         return RedirectToPage("./NotActivated");
 
                     await AddUserClaimsAsync(user);
@@ -127,7 +126,7 @@ namespace TaskPro.Areas.Identity.Pages.Account
                         return Redirect("/Member/Index");
 
                     else
-                        return Redirect("/Home/Index");
+                        return Redirect("/Home/Dashboard");
 
                 }
                 if (result.RequiresTwoFactor)

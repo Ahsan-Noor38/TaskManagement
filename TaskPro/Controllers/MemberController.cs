@@ -10,14 +10,14 @@ namespace TaskPro.Controllers
     [Authorize(Roles = StaticDetails.Roles.Member)]
     public class MemberController : Controller
     {
-        private readonly TaskProDbContext _db = new();
+        private readonly INotificationService _notificationService;
+        private readonly TaskProDbContext _db = new TaskProDbContext();
         public MemberController(TaskProDbContext db, INotificationService notificationService)
         {
             _db = db;
             _notificationService = notificationService;
         }
 
-        private readonly INotificationService _notificationService;
 
         public IActionResult Index(string priority, string status, string search, DateTime? fromDate, DateTime? toDate)
         {

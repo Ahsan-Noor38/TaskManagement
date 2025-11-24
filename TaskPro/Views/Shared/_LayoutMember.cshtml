@@ -16,11 +16,7 @@
     var notifications = new List<TaskPro.Models.Notification>();
     if (!string.IsNullOrEmpty(userId))
     {
-        notifications = _context.Notifications
-            .Where(n => n.UserId == userId)
-            .OrderByDescending(n => n.CreatedAt)
-            .Take(5)
-            .ToList();
+        notifications = new List<Notification>();
     }
 }
 <!DOCTYPE html>

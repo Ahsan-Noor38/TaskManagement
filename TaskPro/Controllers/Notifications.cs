@@ -43,6 +43,7 @@ namespace TaskPro.Controllers
                 query = (IOrderedQueryable<Notification>)query.Where(n => n.IsRead.HasValue && !n.IsRead.Value);
 
             return await query.ToListAsync();
+            //return Enumerable.Empty<Notification>().ToList();
         }
     }
 }

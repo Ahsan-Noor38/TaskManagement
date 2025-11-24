@@ -9,7 +9,6 @@ using TaskPro.Models;
 
 namespace TaskPro.Controllers;
 
-[Authorize]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
@@ -25,7 +24,13 @@ public class HomeController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    [Authorize]
+    public async Task<IActionResult> Dashboard()
     {
         if (!User.Identity.IsAuthenticated)
         {
@@ -94,7 +99,7 @@ public class HomeController : Controller
 
         //User Per Task Counts
         var createdById = isAdmin ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : User.FindFirst(ClaimTypes.PrimarySid)?.Value;
-        var (labels, counts , userIds) = await GetTasksPerUserAsync(createdById);
+        var (labels, counts, userIds) = await GetTasksPerUserAsync(createdById);
 
         ViewBag.TasksPerUserLabels = labels;
         ViewBag.TasksPerUserCounts = counts;
@@ -115,7 +120,7 @@ public class HomeController : Controller
 
         return View();
     }
-    private async Task<(string[] Labels, int[] Counts , string[] userIds)> GetTasksPerUserAsync(string userId)
+    private async Task<(string[] Labels, int[] Counts, string[] userIds)> GetTasksPerUserAsync(string userId)
     {
         var members = (await _userManager.GetUsersInRoleAsync(StaticDetails.Roles.Member))
                        .Where(u => u.CreatedBy == userId)
@@ -159,6 +164,7 @@ public class HomeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
@@ -166,6 +172,7 @@ public class HomeController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetAllNotifications()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -180,5 +187,6 @@ public class HomeController : Controller
             isRead = n.IsRead ?? false,
             createdAt = n.CreatedAt
         }));
+        //return Json(new List<object>());
     }
 }

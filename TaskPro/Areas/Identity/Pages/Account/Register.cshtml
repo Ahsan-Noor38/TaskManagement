@@ -89,6 +89,12 @@
                             <span asp-validation-for="Input.Department" class="text-danger"></span>
                         </div>
 
+                        <div class="form-floating mb-4">
+                            <input asp-for="Input.EmployeeNumber" class="form-control" placeholder="Employee Number" />
+                            <label asp-for="Input.EmployeeNumber">Employee Number</label>
+                            <span asp-validation-for="Input.EmployeeNumber" class="text-danger"></span>
+                        </div>
+
                         <!-- Auto-increment Employee Number: hidden -->
                         <input type="hidden" asp-for="Input.EmployeeNumber" />
 

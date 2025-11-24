@@ -6,6 +6,7 @@
         .Where(t => t.Task.Deadline.Date <= DateTime.Today.Date)
         .ToList();
 }
+
 <link href="/css/StyleSheet2.css" rel="stylesheet">
 <div class="content mb-5">
     <div class="container-fluid">
@@ -61,100 +62,100 @@
             </button>
         </div>
 
-            <form method="get" asp-action="Index" class="filter-form mb-4">
-                <!-- Priority -->
-                <div class="filter-group">
-                    <label class="filter-label">Priority</label>
-                    <select name="priority" class="form-control">
-                        <option value="">-- All --</option>
-                        @foreach (var p in System.Enum.GetValues(typeof(TaskPro.Models.Enum.TaskPriority)))
+        <form method="get" asp-action="Index" class="filter-form mb-4">
+            <!-- Priority -->
+            <div class="filter-group">
+                <label class="filter-label">Priority</label>
+                <select name="priority" class="form-control">
+                    <option value="">-- All --</option>
+                    @foreach (var p in System.Enum.GetValues(typeof(TaskPro.Models.Enum.TaskPriority)))
+                    {
+                        var t = @ViewContext.HttpContext.Request.Query["priority"] == p.ToString();
+                        if (t)
                         {
-                            var t = @ViewContext.HttpContext.Request.Query["priority"] == p.ToString();
-                            if (t)
-                            {
-                                <option value="@p" selected>@p</option>
-                            }
-                            else
-                            {
-                                <option value="@p">@p</option>
-                            }
+                            <option value="@p" selected>@p</option>
                         }
-                    </select>
-                </div>
-
-                <!-- Status -->
-                <div class="filter-group">
-                    <label class="filter-label">Status</label>
-                    <select name="status" class="form-control">
-                        <option value="">-- All --</option>
-                        @foreach (var s in System.Enum.GetValues(typeof(TaskPro.Models.Enum.TaskStatus)))
+                        else
                         {
-                            var t = @ViewContext.HttpContext.Request.Query["status"] == s.ToString();
-                            if (t)
-                            {
-                                <option value="@s" selected>@s</option>
-                            }
-                            else
-                            {
-                                <option value="@s">@s</option>
-                            }
+                            <option value="@p">@p</option>
                         }
-                    </select>
-                </div>
+                    }
+                </select>
+            </div>
 
-                <!-- Search -->
-                <div class="filter-group">
-                    <label class="filter-label">Search</label>
-                    <input type="text" name="search" class="form-control"
-                           value="@ViewContext.HttpContext.Request.Query["search"]"
-                           placeholder="Search task title..." />
-                </div>
-
-                <!-- From Date -->
-                <div class="filter-group">
-                    <label class="filter-label">From Deadline</label>
-                    <input type="date" name="fromDate" class="form-control"
-                           value="@ViewContext.HttpContext.Request.Query["fromDate"]" />
-                </div>
-
-                <!-- To Date -->
-                <div class="filter-group">
-                    <label class="filter-label">To Deadline</label>
-                    <input type="date" name="toDate" class="form-control"
-                           value="@ViewContext.HttpContext.Request.Query["toDate"]" />
-                </div>
-
-                <!-- Buttons -->
-                <div>
-                    <button type="submit" class="btn btn-primary btn-sm">Apply</button>
-                    <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">Clear</a>
-                </div>
-            </form>
-            @if (todayDeadlineTasks.Any())
-            {
-                <div class="alert alert-danger shadow-sm border-0 rounded-3 p-3 mb-4">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="fas fa-clock fa-lg me-2"></i>
-                        <h5 class="mb-0 fw-bold"> Over Due Tasks</h5>
-                    </div>
-                    <ul class="list-unstyled mb-0 mt-2">
-                        @foreach (var task in todayDeadlineTasks)
+            <!-- Status -->
+            <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <select name="status" class="form-control">
+                    <option value="">-- All --</option>
+                    @foreach (var s in System.Enum.GetValues(typeof(TaskPro.Models.Enum.TaskStatus)))
+                    {
+                        var t = @ViewContext.HttpContext.Request.Query["status"] == s.ToString();
+                        if (t)
                         {
-                            <li onclick="location.href='@Url.Action("TaskDetail", "Member", new { id = task.Id })'"
-                                class="mb-2 d-flex justify-content-between align-items-center bg-white rounded p-2 shadow-sm task-clickable">
-                                <span>
-                                    <i class="fas fa-tasks text-danger me-2"></i>
-                                    <strong>@task.Task.Title</strong>
-                                </span>
-                                <span class="badge bg-danger-subtle text-danger border">
-                                    @task.Task.Deadline.ToString("dd MMM yyyy")
-                                    <small>@task.Task.Deadline.ToString("hh:mm tt")</small>
-                                </span>
-                            </li>
+                            <option value="@s" selected>@s</option>
                         }
-                    </ul>
+                        else
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Search -->
+            <div class="filter-group">
+                <label class="filter-label">Search</label>
+                <input type="text" name="search" class="form-control"
+                       value="@ViewContext.HttpContext.Request.Query["search"]"
+                       placeholder="Search task title..." />
+            </div>
+
+            <!-- From Date -->
+            <div class="filter-group">
+                <label class="filter-label">From Deadline</label>
+                <input type="date" name="fromDate" class="form-control"
+                       value="@ViewContext.HttpContext.Request.Query["fromDate"]" />
+            </div>
+
+            <!-- To Date -->
+            <div class="filter-group">
+                <label class="filter-label">To Deadline</label>
+                <input type="date" name="toDate" class="form-control"
+                       value="@ViewContext.HttpContext.Request.Query["toDate"]" />
+            </div>
+
+            <!-- Buttons -->
+            <div>
+                <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">Clear</a>
+            </div>
+        </form>
+        @if (todayDeadlineTasks.Any())
+        {
+            <div class="alert alert-danger shadow-sm border-0 rounded-3 p-3 mb-4">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-clock fa-lg me-2"></i>
+                    <h5 class="mb-0 fw-bold"> Over Due Tasks</h5>
                 </div>
-            }
+                <ul class="list-unstyled mb-0 mt-2">
+                    @foreach (var task in todayDeadlineTasks)
+                    {
+                        <li onclick="location.href='@Url.Action("TaskDetail", "Member", new { id = task.Id })'"
+                            class="mb-2 d-flex justify-content-between align-items-center bg-white rounded p-2 shadow-sm task-clickable">
+                            <span>
+                                <i class="fas fa-tasks text-danger me-2"></i>
+                                <strong>@task.Task.Title</strong>
+                            </span>
+                            <span class="badge bg-danger-subtle text-danger border">
+                                @task.Task.Deadline.ToString("dd MMM yyyy")
+                                <small>@task.Task.Deadline.ToString("hh:mm tt")</small>
+                            </span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
         <div class="row">
             <!-- Upcoming Tasks -->
             <div class="col-lg-4">
